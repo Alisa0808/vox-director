@@ -15,9 +15,8 @@ Then set  "collage_style": "<pick>"  in beats.json, clear old keyframe_url/path,
 import json
 import os
 import sys
-import time
 
-import atlas
+from provider import get_provider, run_jobs
 from styles import compose_collage_prompt, STYLE_LIBRARY, THEME_PRESETS, resolve_theme
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
@@ -40,37 +39,23 @@ def run(project_dir, styles=None, beat_index=0):
     tcn, ten = beat.get("title_cn", ""), beat.get("title_en", "")
     out = os.path.join(project_dir, "style-bakeoff"); os.makedirs(out, exist_ok=True)
 
-    jobs = {}
+    prov = get_provider(doc.get("provider"))
+    specs = {}
     for name in styles:
         tp = resolve_theme(name) or {}              # theme name -> full look bundle
         prompt = compose_collage_prompt(scene, tcn, ten, bg, aspect,
                                         style=tp.get("idiom", name), palette=tp.get("palette"),
                                         type_style=tp.get("type_style"), finish=tp.get("finish"))
-        jobs[name] = atlas.submit_image(IMAGE_MODEL, prompt, aspect_ratio=aspect, resolution="2k")
+        specs[name] = (lambda p=prompt: prov.submit_image(IMAGE_MODEL, p,
+                                                          aspect_ratio=aspect, resolution="2k"))
         tag = "library" if name in STYLE_LIBRARY else "custom"
-        print(f"[{name}] ({tag}) submitted {jobs[name]}")
+        print(f"[{name}] ({tag}) queued")
 
-    done, deadline = {}, time.time() + 240
-    while len(done) < len(jobs) and time.time() < deadline:
-        time.sleep(3)
-        for name, pid in jobs.items():
-            if name in done:
-                continue
-            try:
-                d = atlas._get(f"/model/prediction/{pid}").get("data", {})
-            except atlas.AtlasError as e:
-                done[name] = None; print(f"[{name}] FAILED: {str(e)[:120]}"); continue
-            st = d.get("status")
-            if st in ("completed", "succeeded"):
-                o = d.get("outputs") or d.get("output")
-                done[name] = o[0] if isinstance(o, list) else o
-                print(f"[{name}] done")
-            elif st == "failed":
-                done[name] = None; print(f"[{name}] FAILED: {d.get('error','')[:120]}")
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=240)
 
     for name, url in done.items():
         if url:
-            atlas.download(url, os.path.join(out, f"{name}.jpg"))
+            prov.download(url, os.path.join(out, f"{name}.jpg"))
     print(f"\nsaved candidates to {out} — review, then set \"collage_style\" in beats.json.")
 
 

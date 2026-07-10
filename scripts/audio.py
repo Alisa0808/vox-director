@@ -13,9 +13,8 @@ import json
 import os
 import subprocess
 import sys
-import time
 
-import atlas
+from provider import get_provider, run_jobs
 
 # xai/tts-v1 is a clean, predictable multilingual TTS (named voices + language
 # select). Seed-Audio is a general *sound* model that injects pauses/SFX and
@@ -40,60 +39,42 @@ def run(project_dir: str):
     adir = os.path.join(project_dir, "audio")
     os.makedirs(adir, exist_ok=True)
 
+    prov = get_provider(doc.get("provider"))
     voice = doc.get("voice", {})
     voice_id = voice.get("voice_id", "leo")     # named male documentary-ish voice
     language = voice.get("language", doc.get("language", "en"))
     speed = float(voice.get("speed", 1.0))
 
-    jobs = {}
+    specs = {}
     for beat in doc["beats"]:
-        pid = atlas.submit_media(VOICE_MODEL, text=beat["narration"], language=language,
-                                 voice_id=voice_id, codec="mp3", sample_rate=44100, speed=speed)
-        jobs[("narr", beat["id"])] = pid
-        print(f"[narr {beat['id']}] submitted {pid}")
+        specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
+            VOICE_MODEL, text=t, language=language, voice_id=voice_id,
+            codec="mp3", sample_rate=44100, speed=speed))
 
     # BGM: only generate if we don't already have one (it's slow + costs more).
     bgm_path = os.path.join(adir, "bgm.mp3")
     if not os.path.exists(bgm_path):
         music_prompt = doc.get("music", "cinematic majestic traditional Chinese guzheng erhu, warm")
-        mpid = atlas.submit_media(MUSIC_MODEL, prompt=music_prompt, is_instrumental=True,
-                                  format="mp3")
-        jobs[("bgm", 0)] = mpid
-        print(f"[bgm] submitted {mpid}")
+        specs["bgm"] = (lambda mp=music_prompt: prov.submit_audio(
+            MUSIC_MODEL, prompt=mp, is_instrumental=True, format="mp3"))
     else:
         print(f"[bgm] reuse existing {bgm_path}")
 
-    # poll all
-    done = {}
-    deadline = time.time() + 600
-    while len(done) < len(jobs) and time.time() < deadline:
-        time.sleep(4)
-        for key, pid in jobs.items():
-            if key in done:
-                continue
-            d = atlas._get(f"/model/prediction/{pid}").get("data", {})
-            st = d.get("status")
-            if st in ("completed", "succeeded"):
-                out = d.get("outputs") or d.get("output")
-                done[key] = out[0] if isinstance(out, list) else out
-                print(f"{key} done")
-            elif st == "failed":
-                done[key] = None
-                print(f"{key} FAILED: {json.dumps(d)[:200]}")
+    done = run_jobs(prov, specs, poll_s=4, stall_s=150, max_retries=2, deadline_s=600)
 
     # download + record
     for beat in doc["beats"]:
-        url = done.get(("narr", beat["id"]))
+        url = done.get(f"narr_{beat['id']}")
         if url:
             dest = os.path.join(adir, f"narr_{beat['id']}.mp3")
-            atlas.download(url, dest)
+            prov.download(url, dest)
             beat["narration_audio"] = dest
             beat["narration_dur"] = round(probe_dur(dest), 2)
             print(f"[narr {beat['id']}] {beat['narration_dur']}s -> {dest}")
-    bgm_url = done.get(("bgm", 0))
+    bgm_url = done.get("bgm")
     if bgm_url:
         bgm = os.path.join(adir, "bgm.mp3")
-        atlas.download(bgm_url, bgm)
+        prov.download(bgm_url, bgm)
         doc["bgm_path"] = bgm
         doc["bgm_dur"] = round(probe_dur(bgm), 2)
         print(f"[bgm] {doc['bgm_dur']}s -> {bgm}")

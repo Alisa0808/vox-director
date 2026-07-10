@@ -41,7 +41,7 @@ cloning (`references`), or SFX like transition whooshes.
 ## API gotchas (Atlas, behind a proxy)
 
 1. **Every request MUST send a real `User-Agent` header** — default Python `urllib` UA is
-   blocked by the WAF → 403 Forbidden. (`scripts/atlas.py` sets one.)
+   blocked by the WAF → 403 Forbidden. (`scripts/atlas_cloud.py` sets one.)
 2. **Download generated assets with curl, not urllib** — the OSS host behind the local proxy
    kills `urlretrieve` with `RemoteDisconnected`.
 3. **Audio/TTS/music/video all submit via `POST /api/v1/model/generateVideo`**, image &

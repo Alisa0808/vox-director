@@ -27,14 +27,14 @@ LLM_BASE = "https://api.atlascloud.ai/v1"
 UA = "vox-director/0.1 (+https://atlascloud.ai)"
 
 
-class AtlasError(RuntimeError):
+class AtlasCloudError(RuntimeError):
     pass
 
 
 def _key() -> str:
     k = os.environ.get("ATLASCLOUD_API_KEY")
     if not k:
-        raise AtlasError("ATLASCLOUD_API_KEY is not set. Get one at "
+        raise AtlasCloudError("ATLASCLOUD_API_KEY is not set. Get one at "
                          "https://www.atlascloud.ai/console/api-keys")
     return k
 
@@ -53,7 +53,7 @@ def _post(path: str, payload: dict, base: str = MEDIA_BASE, timeout: int = 60) -
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.load(r)
     except urllib.error.HTTPError as e:
-        raise AtlasError(f"POST {path} -> {e.code}: {e.read().decode()[:400]}") from e
+        raise AtlasCloudError(f"POST {path} -> {e.code}: {e.read().decode()[:400]}") from e
 
 
 def _get(path: str, base: str = MEDIA_BASE, timeout: int = 60, retries: int = 3) -> dict:
@@ -66,7 +66,7 @@ def _get(path: str, base: str = MEDIA_BASE, timeout: int = 60, retries: int = 3)
         except (urllib.error.URLError, TimeoutError) as e:  # transient
             last = e
             time.sleep(2 ** i)
-    raise AtlasError(f"GET {path} failed after {retries} tries: {last}")
+    raise AtlasCloudError(f"GET {path} failed after {retries} tries: {last}")
 
 
 # ---------------------------------------------------------------- generation
@@ -106,11 +106,11 @@ def poll(prediction_id: str, interval: int = 3, timeout_s: int = 900) -> str:
             if isinstance(out, str):
                 out = [out]
             if not out:
-                raise AtlasError(f"{prediction_id}: completed but no output")
+                raise AtlasCloudError(f"{prediction_id}: completed but no output")
             return out[0]
         if status == "failed":
-            raise AtlasError(f"{prediction_id} failed: {json.dumps(d)[:300]}")
-    raise AtlasError(f"{prediction_id} timed out after {timeout_s}s")
+            raise AtlasCloudError(f"{prediction_id} failed: {json.dumps(d)[:300]}")
+    raise AtlasCloudError(f"{prediction_id} timed out after {timeout_s}s")
 
 
 def image(model: str, prompt: str, **params) -> str:
@@ -135,7 +135,7 @@ def upload(file_path: str) -> str:
     data = json.loads(out).get("data", {})
     url = data.get("download_url") or data.get("url")
     if not url:
-        raise AtlasError(f"upload failed: {out[:300]}")
+        raise AtlasCloudError(f"upload failed: {out[:300]}")
     return url
 
 
@@ -143,7 +143,7 @@ def download(url: str, dest: str) -> str:
     """Proxy-safe download via curl (urllib breaks on the OSS host)."""
     subprocess.run(["/usr/bin/curl", "-s", "--retry", "3", "-o", dest, url], check=True)
     if not os.path.exists(dest) or os.path.getsize(dest) == 0:
-        raise AtlasError(f"download produced empty file: {url}")
+        raise AtlasCloudError(f"download produced empty file: {url}")
     return dest
 
 

@@ -134,6 +134,7 @@ Add a `shots` array to each beat (see schema). Give each shot its own short `sce
   "project": "my-film", "topic": "...", "language": "en",
   "aspect": "9:16",                       // 16:9 | 9:16 | 1:1 | 3:4
   "style": "collage",
+  "provider": "atlas_cloud",              // media backend — default; pluggable (scripts/provider.py)
   "theme": "american-retro",              // THEME_PRESET (styles.THEME_PRESETS) — the LOOK layer
   "arc": "timeline",                      // narrative arc (beat-layer.md) — the STORY skeleton
   "video_model": "google/gemini-omni-flash/image-to-video",  // Kling for real people
@@ -181,6 +182,11 @@ Model IDs change — fetch the live list first: `GET https://api.atlascloud.ai/a
 See `references/models-and-gotchas.md` for the full model-choice reasoning and every
 API / ffmpeg gotcha (auth header, curl downloads, no-libass captions, content blocks, etc.).
 Read it before debugging any failure — most failures are already documented there.
+
+**Backends are pluggable.** Every API call goes through a **provider** (`scripts/provider.py`);
+Atlas Cloud is the default and only backend today. Set `"provider"` in beats.json to route to a
+different backend once one is added — the stage scripts don't change. `scripts/provider.py`'s
+`run_jobs()` also does the submit/poll with **auto-resubmit on a stalled or failed job**.
 
 ## Advanced: element-level motion collage
 

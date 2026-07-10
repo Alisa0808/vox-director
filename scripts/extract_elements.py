@@ -16,7 +16,7 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFilter
 
-import atlas
+from provider import get_provider, run_jobs
 
 RMBG = "youchuan/v8.1/remove-background"
 
@@ -42,6 +42,7 @@ def run(project_dir):
     card = Image.open(spec["card"]).convert("RGBA")
     ed = os.path.join(project_dir, "elements"); os.makedirs(ed, exist_ok=True)
 
+    prov = get_provider(spec.get("provider"))
     for el in spec["elements"]:
         name, bbox, mode = el["name"], el["bbox"], el.get("mode", "crop")
         crop = card.crop(tuple(bbox))
@@ -49,10 +50,11 @@ def run(project_dir):
         crop.save(raw)
         out = os.path.join(ed, f"{name}.png")
         if mode == "cutout":
-            url = atlas.upload(raw)
-            pid = atlas._post("/model/generateImage", {"model": RMBG, "image": url})["data"]["id"]
-            res = atlas.poll(pid, interval=3, timeout_s=180)
-            atlas.download(res, out)
+            url = prov.upload(raw)
+            res = run_jobs(prov, {name: lambda u=url: prov.remove_bg(RMBG, u)},
+                           poll_s=3, stall_s=60, max_retries=2, deadline_s=180)[name]
+            if res:
+                prov.download(res, out)
             elem = Image.open(out).convert("RGBA")
         else:
             elem = crop

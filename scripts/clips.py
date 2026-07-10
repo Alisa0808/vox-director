@@ -10,9 +10,8 @@ Usage: python3 clips.py <project_dir>   (default: out/tang-30s)
 import json
 import os
 import sys
-import time
 
-import atlas
+from provider import get_provider, run_jobs
 from styles import resolve_theme
 
 VIDEO_MODEL = "google/gemini-omni-flash/image-to-video"
@@ -108,7 +107,8 @@ def run(project_dir, only=None):
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(clip_dir, exist_ok=True)
 
-    jobs = {}
+    prov = get_provider(doc.get("provider"))
+    specs, by_key = {}, {}
     for beat in doc["beats"]:
         for shot, key in shots_of(beat):
             if only and key not in only:
@@ -116,7 +116,7 @@ def run(project_dir, only=None):
             url = shot.get("keyframe_url")
             if not url and shot.get("keyframe_path") and os.path.exists(shot["keyframe_path"]):
                 # user-provided keyframe (e.g. hand-made collage card) -> upload it
-                url = atlas.upload(shot["keyframe_path"])
+                url = prov.upload(shot["keyframe_path"])
                 shot["keyframe_url"] = url
                 print(f"[{key}] uploaded provided keyframe -> {url}")
             if not url:
@@ -139,39 +139,18 @@ def run(project_dir, only=None):
                 params = dict(image=url, duration=dur, sound=False)
             else:                                    # gemini omni flash
                 params = dict(image=url, duration=dur, aspect_ratio=aspect, resolution="720p")
-            pid = atlas.submit_video(model, prompt, **params)
-            jobs[key] = (pid, shot)
-            print(f"[{key}] submitted {pid} ({dur}s, {model.split('/')[1]})")
+            specs[key] = (lambda m=model, p=prompt, pr=params: prov.submit_video(m, p, **pr))
+            by_key[key] = shot
+            print(f"[{key}] queued ({dur}s, {model.split('/')[1]})")
 
-    done = {}
-    deadline = time.time() + 1200
-    while len(done) < len(jobs) and time.time() < deadline:
-        time.sleep(5)
-        for key, (pid, _) in jobs.items():
-            if key in done:
-                continue
-            try:
-                d = atlas._get(f"/model/prediction/{pid}").get("data", {})
-            except atlas.AtlasError as e:
-                # a failed task makes the prediction endpoint return 500 -> stop waiting
-                done[key] = None
-                print(f"[{key}] FAILED (poll error): {str(e)[:180]}")
-                continue
-            st = d.get("status")
-            if st in ("completed", "succeeded"):
-                out = d.get("outputs") or d.get("output")
-                done[key] = out[0] if isinstance(out, list) else out
-                print(f"[{key}] done")
-            elif st == "failed":
-                done[key] = None
-                print(f"[{key}] FAILED: {d.get('error','')[:160]}")
+    done = run_jobs(prov, specs, poll_s=5, stall_s=240, max_retries=2, deadline_s=1200)
 
-    for key, (_, shot) in jobs.items():
-        url = done.get(key)
+    for key, url in done.items():
         if not url:
             continue
         dest = os.path.join(clip_dir, f"clip_{key}.mp4")
-        atlas.download(url, dest)
+        prov.download(url, dest)
+        shot = by_key[key]
         shot["clip_url"] = url
         shot["clip_path"] = dest
         print(f"[{key}] saved {dest}")

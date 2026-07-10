@@ -104,6 +104,7 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
   "project": "my-film", "topic": "...", "language": "en",
   "aspect": "9:16",                       // 16:9 | 9:16 | 1:1 | 3:4
   "style": "collage",
+  "provider": "atlas_cloud",              // 媒体后端——默认;可插拔(scripts/provider.py)
   "theme": "american-retro",              // 主题预置(styles.THEME_PRESETS)——"看的层"
   "arc": "timeline",                      // 叙事弧(beat-layer.md)——"故事骨架"
   "video_model": "google/gemini-omni-flash/image-to-video",  // 真人用 Kling
@@ -149,6 +150,10 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 
 完整选型理由 + 每个 API/ffmpeg 坑(auth 头、curl 下载、无 libass 烧字幕、内容审核等)见
 `references/models-and-gotchas.md`。**排查任何失败前先读它**——大多数坑已记录。
+
+**后端可插拔。** 所有 API 调用都走一个 **provider**(`scripts/provider.py`);Atlas Cloud 是默认、
+目前唯一的后端。在 beats.json 里设 `"provider"` 就能切到别的后端(以后加了才有)——各阶段脚本不用改。
+`provider.py` 的 `run_jobs()` 还做了提交/轮询,并在任务**卡死或失败时自动重提**。
 
 ## 高阶:元素级 motion collage
 

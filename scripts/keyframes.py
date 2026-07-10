@@ -12,9 +12,8 @@ Usage: python3 keyframes.py <project_dir>   (default: out/tang-30s)
 import json
 import os
 import sys
-import time
 
-import atlas
+from provider import get_provider, run_jobs
 from styles import compose_keyframe_prompt, compose_collage_prompt, resolve_theme
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
@@ -45,7 +44,8 @@ def run(project_dir):
     kf_dir = os.path.join(project_dir, "keyframes")
     os.makedirs(kf_dir, exist_ok=True)
 
-    jobs = {}   # key -> (pid, shot_ref)
+    prov = get_provider(doc.get("provider"))
+    specs, by_key = {}, {}
     for beat in doc["beats"]:
         for shot, key in shots_of(beat):
             if shot.get("keyframe_url"):        # already generated (e.g. reused wide) -> skip
@@ -61,38 +61,18 @@ def run(project_dir):
                 prompt = compose_keyframe_prompt(era, scene, beat["title_cn"],
                                                  beat["title_en"], aspect)
             shot["keyframe_prompt"] = prompt
-            pid = atlas.submit_image(IMAGE_MODEL, prompt, aspect_ratio=aspect, resolution="2k")
-            jobs[key] = (pid, shot)
-            print(f"[{key}] submitted {pid}")
+            specs[key] = (lambda p=prompt: prov.submit_image(IMAGE_MODEL, p,
+                                                             aspect_ratio=aspect, resolution="2k"))
+            by_key[key] = shot
 
-    done = {}
-    deadline = time.time() + 300
-    while len(done) < len(jobs) and time.time() < deadline:
-        time.sleep(3)
-        for key, (pid, _) in jobs.items():
-            if key in done:
-                continue
-            try:
-                d = atlas._get(f"/model/prediction/{pid}").get("data", {})
-            except atlas.AtlasError as e:
-                done[key] = None
-                print(f"[{key}] FAILED (poll error): {str(e)[:160]}")
-                continue
-            st = d.get("status")
-            if st in ("completed", "succeeded"):
-                out = d.get("outputs") or d.get("output")
-                done[key] = out[0] if isinstance(out, list) else out
-                print(f"[{key}] done")
-            elif st == "failed":
-                done[key] = None
-                print(f"[{key}] FAILED: {d.get('error','')[:160]}")
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=300)
 
-    for key, (_, shot) in jobs.items():
-        url = done.get(key)
+    for key, url in done.items():
         if not url:
             continue
         dest = os.path.join(kf_dir, f"kf_{key}.jpg")
-        atlas.download(url, dest)
+        prov.download(url, dest)
+        shot = by_key[key]
         shot["keyframe_url"] = url
         shot["keyframe_path"] = dest
         print(f"[{key}] saved {dest}")

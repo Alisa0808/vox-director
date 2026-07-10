@@ -8,13 +8,10 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Claude Skill](https://img.shields.io/badge/Claude-Skill-d97757.svg)
 
+https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
+
 <p align="center">
-  <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">
-    <img src="assets/showcase-cover.jpg" width="680" alt="点击观看 Vox Director 样片">
-  </a>
-</p>
-<p align="center">
-  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">点击观看完整 30 秒成片(带声音)</a>——主题《中华文明的变迁》,一句选题进,这条片子出。</em>
+  <em>主题《中华文明的变迁》——一句选题进,这条片子出。▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">视频加载不出来?点这里看</a>。</em>
 </p>
 
 ---

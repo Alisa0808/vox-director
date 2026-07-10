@@ -8,13 +8,10 @@ A [Claude](https://claude.com/claude-code) skill that runs end to end on the [At
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Claude Skill](https://img.shields.io/badge/Claude-Skill-d97757.svg)
 
+https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
+
 <p align="center">
-  <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">
-    <img src="assets/showcase-cover.jpg" width="680" alt="Click to watch the Vox Director showcase film">
-  </a>
-</p>
-<p align="center">
-  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">Click to watch the full 30s film (with sound)</a> — "The evolution of Chinese civilization", one topic in, this out.</em>
+  <em>"The evolution of Chinese civilization" — one topic in, this out. ▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">Trouble playing the video? Watch it here</a>.</em>
 </p>
 
 ---

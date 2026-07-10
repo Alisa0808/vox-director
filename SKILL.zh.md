@@ -28,8 +28,8 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
    组装的更炸效果,才把海报拆件、用本地关键帧引擎驱动(高阶路线)。
 
 一切成败在提示词。**写任何生图/生视频 prompt 前,先读 `references/prompt-guide.md`**——它有把
-「真·Vox 拼贴」和「会动的 PPT」区分开的精确 prompt 结构。三个"库"文件:`prompt-guide.md`(生图5段+
-生视频轴)、`vocab-bank.md`(主题层维度词库 + 8 个主题预置)、`beat-layer.md`(叙事弧库 + 运镜/素材运动)。
+「真·Vox 拼贴」和「会动的 PPT」区分开的精确 prompt 结构。两个"库"文件:`prompt-guide.md`(画面/LOOK
+层:生图5段 + 生视频轴 + 词库 + 8 套主题预置)、`beat-layer.md`(故事/STORY 层:叙事弧库 + 运镜/素材运动)。
 
 ## 前置检查(别跳过)
 
@@ -48,10 +48,10 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
    **`element_motion` 写丰富**(见第4步)。每段:`narration`、`title_cn`/`title_en`、`scene`、`bg`、
    `feel`、`hook`。这份草稿是**唯一强制确认关口**——生成前先给用户过。示例见 `examples/`。
 
-2. **选视觉风格(混合式——在生关键帧前做)。** 别所有主题都用一个风格。读 `references/vocab-bank.md`;
+2. **选视觉风格(混合式——在生关键帧前做)。** 别所有主题都用一个风格。读 `references/prompt-guide.md`(§5 主题预置);
    从 **主题预置**(`styles.THEME_PRESETS`:`american-retro`、`swiss-modern`、`punk-zine`、
    `soviet-constructivist`、`wpa-propaganda`、`70s-groovy`、`chinese-ink`、`atomic-age`)里挑 3–4 个
-   贴主题(年代/文化/调性)的,**库里没有就现调一个**(混 vocab-bank 的 媒介/年代/配色/字体/质感)。
+   贴主题(年代/文化/调性)的,**库里没有就现调一个**(混 prompt-guide 的 媒介/年代/配色/字体/质感)。
    **匹配主题、不匹配语言**(英文讲中国史照样该中式)。一个主题打包整个"看的层"
    (idiom+配色+字体+质感+情绪+运动)。跑 bake-off 让用户看图 pick——AI 出主意、库保底、人拍板。
    把选中的名字写进 `"theme"`:

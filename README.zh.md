@@ -11,7 +11,13 @@
 https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 
 <p align="center">
-  <em>主题《中华文明的变迁》——一句选题进,这条片子出。</em>
+  <em>▶《中华文明的变迁》· 30 秒 · 横屏</em>
+</p>
+
+https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0
+
+<p align="center">
+  <em>▶《货币简史》· 60 秒 · 竖屏</em>
 </p>
 
 ---
@@ -94,8 +100,7 @@ SKILL.md              技能本体(英文)——agent 遵循的工作流
 SKILL.zh.md           同一技能的中文版
 AGENTS.md             非 Claude agent(Codex 等)的入口
 references/           创意引擎
-  prompt-guide.md       生图 + 生视频的提示词结构
-  vocab-bank.md         8 个生图维度 + 9 个生视频轴 + 8 套主题预设
+  prompt-guide.md       画面/LOOK 层:提示词结构 + 词库 + 8 套主题预设
   beat-layer.md         14 种叙事弧线 + 钩子/节奏 + 镜头模式
   models-and-gotchas.md 每一个 API / ffmpeg 坑,都已填平
   local-engine.md       高级的元素级动效引擎

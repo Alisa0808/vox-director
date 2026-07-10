@@ -1,6 +1,6 @@
 # Beat / Shot Layer Library — narrative arc + per-shot spec
 
-The counterpart to `vocab-bank.md` (which covers the LOOK / theme layer). This covers the
+The counterpart to `prompt-guide.md` (which covers the LOOK / theme layer). This covers the
 **beat layer**: the narrative skeleton across the whole film + the per-shot spec (shot size,
 camera move, element motion). Distilled from short-form/story-structure/editing research
 (sources at bottom). One "poster per beat"; our per-shot unit ≈ what the sources call a beat.

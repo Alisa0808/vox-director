@@ -101,7 +101,7 @@ DEFAULT_STYLE = "american-retro"
 # THEME PRESETS = full "look" bundles (theme-layer). A preset fixes the LOOK dims (idiom +
 # palette + type + finish + mood + default motion energy); scene/camera/element-motion stay
 # per-beat (beat-layer); Vox constraints + text/flat locks are universal. Extensible: Claude may
-# compose a custom theme by mixing vocab-bank.md when a topic needs one the library lacks.
+# compose a custom theme by mixing prompt-guide.md dimensions when a topic needs one the library lacks.
 THEME_PRESETS = {
     "american-retro": {"idiom": "american-retro", "palette": "bold retro primaries — red, mustard, teal, cream",
         "type_style": "bold wood-type / heavy slab, all-caps", "finish": "heavy halftone dots, aged newsprint, slight misregistration",

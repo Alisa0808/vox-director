@@ -62,10 +62,10 @@ This is the default, most-automated path. Every stage is one script, all driven 
    user the beat map before generating. Examples in `examples/`.
 
 2. **Pick the visual style (hybrid — do this BEFORE keyframes).** Do not reuse one house style
-   for every topic. Read `references/vocab-bank.md`; pick 3–4 **theme presets**
+   for every topic. Read `references/prompt-guide.md` (§5 theme presets); pick 3–4 **theme presets**
    (`styles.THEME_PRESETS`: `american-retro`, `swiss-modern`, `punk-zine`,
    `soviet-constructivist`, `wpa-propaganda`, `70s-groovy`, `chinese-ink`, `atomic-age`) that fit
-   the topic's era/culture/tone — **or compose a custom theme** by mixing vocab-bank dimensions
+   the topic's era/culture/tone — **or compose a custom theme** by mixing the prompt-guide dimensions
    (medium/era/palette/type/finish) when none fit. Match the topic, **not** the language (an
    English film on Chinese history should look Chinese). A theme bundles the whole LOOK layer
    (idiom+palette+type+finish+mood+motion). Run a bake-off and let the user pick by eye — AI

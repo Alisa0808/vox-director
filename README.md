@@ -11,7 +11,13 @@ An **agent skill** — usable by any coding agent ([Claude Code](https://claude.
 https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 
 <p align="center">
-  <em>"The evolution of Chinese civilization" — one topic in, this out.</em>
+  <em>▶ "The evolution of Chinese civilization" · 30s · landscape</em>
+</p>
+
+https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0
+
+<p align="center">
+  <em>▶ "A brief history of money" · 60s · vertical</em>
 </p>
 
 ---
@@ -94,8 +100,7 @@ SKILL.md              the skill (English) — the workflow the agent follows
 SKILL.zh.md           the same skill in Chinese
 AGENTS.md             entry point for non-Claude agents (Codex, …)
 references/           the creative engine
-  prompt-guide.md       image + video prompt structures
-  vocab-bank.md         8 image dims + 9 video axes + 8 theme presets
+  prompt-guide.md       the LOOK layer — prompt structures, vocab & 8 theme presets
   beat-layer.md         14 narrative arcs + hook/pacing + shot patterns
   models-and-gotchas.md every API / ffmpeg gotcha, already solved
   local-engine.md       the advanced element-level motion engine

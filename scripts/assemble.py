@@ -101,8 +101,12 @@ def run(project_dir):
     # ---- 3) captions (per beat) + watermark PNGs ----
     cap_pngs = []
     for bs in beat_spans:
-        p = os.path.join(tmp, f"cap_{bs['beat']['id']}.png")
-        text_overlay.render_caption(bs["beat"]["narration"], p, W, H)
+        beat = bs["beat"]
+        p = os.path.join(tmp, f"cap_{beat['id']}.png")
+        kf = next((s["keyframe_path"] for s in (beat.get("shots") or [beat])
+                   if s.get("keyframe_path") and os.path.exists(s["keyframe_path"])), None)
+        acc = text_overlay.accent_color(kf) if kf else None
+        text_overlay.render_caption(beat["narration"], p, W, H, accent=acc)
         cap_pngs.append(p)
     wm_png = text_overlay.render_watermark(wm_text, os.path.join(tmp, "wm.png"), W, H)
 

@@ -1,3 +1,5 @@
+<p align="right"><b>English</b> · <a href="README.zh.md">简体中文</a></p>
+
 # 🎬 Vox Director
 
 **Turn one topic into a finished Vox-style paper-collage explainer / ad video — script, collage keyframes, motion, voice-over, music and captions, all automated.**
@@ -8,14 +10,12 @@ A [Claude](https://claude.com/claude-code) skill that runs end to end on the [At
 
 <p align="center">
   <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">
-    <img src="assets/showcase-tang.gif" width="680" alt="Vox Director showcase — a Vox-style collage film on the evolution of Chinese civilization">
+    <img src="assets/showcase-cover.jpg" width="680" alt="Click to watch the Vox Director showcase film">
   </a>
 </p>
 <p align="center">
-  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">Watch the full 30s film (with sound)</a> — "The evolution of Chinese civilization", one topic in, this out.</em>
+  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">Click to watch the full 30s film (with sound)</a> — "The evolution of Chinese civilization", one topic in, this out.</em>
 </p>
-
-> 🇨🇳 中文说明见 **[README.zh.md](README.zh.md)**.
 
 ---
 

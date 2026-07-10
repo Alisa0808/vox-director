@@ -1,3 +1,5 @@
+<p align="right"><a href="README.md">English</a> · <b>简体中文</b></p>
+
 # 🎬 Vox Director(拼贴动效导演）
 
 **一个选题进,一条成片出——脚本、拼贴关键帧、动效、旁白、配乐、字幕,全流程自动化的 Vox 风格拼贴讲解/广告视频。**
@@ -8,14 +10,12 @@
 
 <p align="center">
   <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">
-    <img src="assets/showcase-tang.gif" width="680" alt="Vox Director 样片——中华文明变迁拼贴短片">
+    <img src="assets/showcase-cover.jpg" width="680" alt="点击观看 Vox Director 样片">
   </a>
 </p>
 <p align="center">
-  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">观看完整 30 秒成片(带声音)</a>——主题《中华文明的变迁》,一句选题进,这条片子出。</em>
+  <em>▶ <a href="https://github.com/Alisa0808/vox-director/blob/main/assets/showcase-tang.mp4">点击观看完整 30 秒成片(带声音)</a>——主题《中华文明的变迁》,一句选题进,这条片子出。</em>
 </p>
-
-> 🇬🇧 English docs: **[README.md](README.md)**.
 
 ---
 

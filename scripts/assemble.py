@@ -48,6 +48,9 @@ def run(project_dir):
     beats = doc["beats"]
     W, H = RES.get(doc.get("aspect", "16:9"), (1920, 1080))
     wm_text = doc.get("watermark", WATERMARK)
+    mix = doc.get("mix", {})                      # per-project audio balance (optional)
+    music_vol = float(mix.get("music", 0.6))      # BGM level (was a fixed 0.9 — lowered so VO leads)
+    voice_vol = float(mix.get("voice", 1.25))     # narration boost before the duck + final mix
     tmp = os.path.join(project_dir, "_seg")
     os.makedirs(tmp, exist_ok=True)
 
@@ -138,10 +141,10 @@ def run(project_dir):
         nlabels.append(f"[n{i}]")
     # pad the narration mix to the FULL duration, else sidechaincompress follows the (shorter)
     # narration length and -shortest clips the tail (e.g. a silent payoff/ending beat).
-    chain.append(f"{''.join(nlabels)}amix=inputs={nb}:normalize=0:duration=longest,apad,atrim=0:{total}[narrmix]")
+    chain.append(f"{''.join(nlabels)}amix=inputs={nb}:normalize=0:duration=longest,volume={voice_vol},apad,atrim=0:{total}[narrmix]")
     # a filter-output label can only be consumed once -> split narration in two
     chain.append("[narrmix]asplit=2[narrA][narrB]")
-    chain.append(f"[{bgm_idx}:a]atrim=0:{total},volume=0.9,afade=t=out:st={max(total-2,0):.2f}:d=2[bgt]")
+    chain.append(f"[{bgm_idx}:a]atrim=0:{total},volume={music_vol},afade=t=out:st={max(total-2,0):.2f}:d=2[bgt]")
     chain.append("[bgt][narrA]sidechaincompress=threshold=0.02:ratio=12:attack=5:release=350[bgd]")
     chain.append(f"[narrB][bgd]amix=inputs=2:normalize=0:duration=longest,volume=1.4,atrim=0:{total}[a]")
     filt = ";".join(chain)

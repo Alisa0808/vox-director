@@ -112,6 +112,7 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
   "constraints": "strict",                // strict = 开防缺陷护栏 | loose = 放开探索 + 抽卡
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},
   "music": "epic cinematic orchestral, instrumental, no vocals",
+  "mix": {"music": 0.6, "voice": 1.25},   // 音量平衡(可选;这是默认值,音乐在人声下自动让路)
   "watermark": "Made with Atlas Cloud",
   "beats": [
     {

@@ -4,7 +4,7 @@
 
 **一个选题进,一条成片出——脚本、拼贴关键帧、动效、旁白、配乐、字幕,全流程自动化的 Vox 风格拼贴讲解/广告视频。**
 
-一个**通用 agent 技能**——任何能读工作流、跑脚本的编码 agent 都能用([Claude Code](https://claude.com/claude-code)、[Codex](https://developers.openai.com/codex/) 等),后端全跑 [Atlas Cloud](https://www.atlascloud.ai) API,本地用 `ffmpeg` 合成。你给一句话选题,它给你一个 `mp4`。
+一个**通用 agent 技能**,后端全跑 [Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director) API、本地用 `ffmpeg` 合成,任何编码 agent(Claude Code、Codex 等)都能用。你给一句话选题,它给你一个 `mp4`。
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Agent Skill](https://img.shields.io/badge/Agent-Skill-d97757.svg)
 
@@ -73,7 +73,7 @@ git clone https://github.com/Alisa0808/vox-director.git ~/.claude/skills/vox-dir
 
 **方式 B —— 用打包好的技能文件:** 下载 [`vox-director.skill`](vox-director.skill),在你的 Claude 技能界面里安装。
 
-然后设置 Atlas Cloud API key(在 <https://www.atlascloud.ai/console/api-keys> 获取):
+然后设置 Atlas Cloud API key(在 [atlascloud.ai/console/api-keys](https://www.atlascloud.ai/console/api-keys?utm_source=github&utm_campaign=vox_director) 获取):
 ```bash
 export ATLASCLOUD_API_KEY="sk-..."
 ```
@@ -82,7 +82,7 @@ export ATLASCLOUD_API_KEY="sk-..."
 
 装好技能后,直接跟你的编码 agent 说:
 
-> *「做一条 Vox 风格的拼贴视频,讲货币简史——全英文,9:16,60 秒。」*
+> *「做一条 Vox 风格的拼贴视频,介绍墨西哥街头美食——全英文,16:9,15 秒。」*
 
 agent 会先起草分镜脚本给你确认,再跑一轮风格试片让你挑,然后生成关键帧 → 动效 → 旁白 → 配乐,合成 `out/<项目>/final.mp4`。
 
@@ -113,7 +113,7 @@ assets/               样片
 
 灵感来自 **[Stav Zilber](https://x.com/StavZilber)**、**[rom1trs](https://x.com/rom1trs)**、**[Higgsfield](https://x.com/higgsfield_ai)** 的拼贴广告工作流,以及 **[Vox](https://www.vox.com)** 的讲解片视觉语言。
 
-全流程基于 **[Atlas Cloud](https://www.atlascloud.ai)** 构建——一个提示词,一条成片。
+全流程基于 **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director)** 构建——一个提示词,一条成片。
 
 ## 许可
 

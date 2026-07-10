@@ -4,7 +4,7 @@
 
 **Turn one topic into a finished Vox-style paper-collage explainer / ad video — script, collage keyframes, motion, voice-over, music and captions, all automated.**
 
-An **agent skill** — usable by any coding agent ([Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex/), …) — that runs end to end on the [Atlas Cloud](https://www.atlascloud.ai) API + local `ffmpeg`. You give it a one-line topic; it gives you an `mp4`.
+An **agent skill** that runs end to end on the [Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director) API + local `ffmpeg`, usable by any coding agent (Claude Code, Codex, etc.). You give it a one-line topic; it gives you an `mp4`.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Agent Skill](https://img.shields.io/badge/Agent-Skill-d97757.svg)
 
@@ -73,7 +73,7 @@ git clone https://github.com/Alisa0808/vox-director.git ~/.claude/skills/vox-dir
 
 **Option B — from the packaged skill:** download [`vox-director.skill`](vox-director.skill) and install it via your Claude skills UI.
 
-Then set your Atlas Cloud API key (get one at <https://www.atlascloud.ai/console/api-keys>):
+Then set your Atlas Cloud API key (get one at [atlascloud.ai/console/api-keys](https://www.atlascloud.ai/console/api-keys?utm_source=github&utm_campaign=vox_director)):
 ```bash
 export ATLASCLOUD_API_KEY="sk-..."
 ```
@@ -82,7 +82,7 @@ export ATLASCLOUD_API_KEY="sk-..."
 
 Just ask your coding agent, with the skill installed:
 
-> *"Make me a Vox-style collage video about the history of money — English, 9:16, 60 seconds."*
+> *"Make me a Vox-style collage video introducing Mexican street food — English, 16:9, 15 seconds."*
 
 The agent will draft a beat map for your approval, run a style bake-off for you to pick from, then generate keyframes → motion → voice → music and assemble `out/<project>/final.mp4`.
 
@@ -113,7 +113,7 @@ assets/               the showcase film
 
 Inspired by the collage-ad workflows of **[Stav Zilber](https://x.com/StavZilber)**, **[rom1trs](https://x.com/rom1trs)** and **[Higgsfield](https://x.com/higgsfield_ai)**, and by **[Vox](https://www.vox.com)**'s explainer visual language.
 
-Built end to end on **[Atlas Cloud](https://www.atlascloud.ai)** — one prompt, one film.
+Built end to end on **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director)** — one prompt, one film.
 
 ## License
 

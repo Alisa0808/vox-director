@@ -1,0 +1,32 @@
+{
+  "name": "vox-director",
+  "version": "1.0.0",
+  "description": "Vox Director — an open-source Agent Skill that turns one topic into a finished Vox-style paper-collage explainer/ad video: script, collage keyframes, motion, voice-over, music and captions, automated end to end on the Atlas Cloud API + local ffmpeg. Works with Claude Code, Codex, and any SKILL.md agent.",
+  "keywords": [
+    "vox",
+    "vox-director",
+    "ai-video",
+    "video-generation",
+    "text-to-video",
+    "paper-collage",
+    "collage-video",
+    "motion-graphics",
+    "explainer-video",
+    "ai-ads",
+    "agent-skill",
+    "claude-skill",
+    "claude-code",
+    "codex",
+    "ffmpeg",
+    "tts",
+    "atlas-cloud",
+    "generative-ai"
+  ],
+  "homepage": "https://github.com/Alisa0808/vox-director",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alisa0808/vox-director.git"
+  },
+  "license": "MIT",
+  "author": "Alisa0808"
+}

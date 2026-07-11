@@ -1,0 +1,17 @@
+# Vox Director
+
+> An open-source agent skill that turns ONE topic into a finished Vox-style paper-collage explainer / ad video — script, collage keyframes, motion, voice-over, music and captions — automated end to end on the Atlas Cloud API + local ffmpeg. Works with any coding agent (Claude Code, Codex, and any SKILL.md agent).
+
+## Core idea
+You give a one-line topic. The skill drafts a beat map (you approve it), you pick a visual style, then it generates every collage poster (google/nano-banana-2), animates them (google/gemini-omni-flash), writes and voices the narration (xai/tts-v1), scores it with music (minimax/music-2.6), burns in captions, and assembles a final mp4 with ffmpeg. Two human decision gates; everything else is automated. A 60-second film takes minutes and a couple of dollars. Real people/brands animate via kwaivgi/kling-video-o3-pro.
+
+## What makes it different
+- The look is a real editorial paper-collage (torn paper, halftone, cut-out headlines), not a moving PowerPoint.
+- Topic-matched styling via theme presets + a per-video palette, not one house style.
+- Backend-pluggable (Atlas Cloud is the default provider); runs from any coding agent, not tied to one product.
+
+## Links
+- Skill (workflow): https://github.com/Alisa0808/vox-director/blob/main/SKILL.md
+- README: https://github.com/Alisa0808/vox-director/blob/main/README.md
+- Repository: https://github.com/Alisa0808/vox-director
+- License: MIT

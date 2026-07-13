@@ -14,7 +14,7 @@ import os
 import sys
 
 from provider import get_provider, run_jobs
-from styles import compose_keyframe_prompt, compose_collage_prompt, resolve_theme
+from styles import compose_keyframe_prompt, compose_collage_prompt, resolve_theme, image_params
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
 
@@ -33,6 +33,8 @@ def run(project_dir):
     with open(bpath) as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
+    img_model = doc.get("image_model", IMAGE_MODEL)   # default nano-banana-2; e.g. openai/gpt-image-2/text-to-image
+    img_res = doc.get("image_resolution", "1k")       # 1k (default) | 2k | 4k
     style = doc.get("style", "painterly")
     theme = resolve_theme(doc.get("theme")) or {}   # theme preset -> full look bundle
     collage_style = theme.get("idiom") or doc.get("collage_style", "american-retro")
@@ -61,8 +63,8 @@ def run(project_dir):
                 prompt = compose_keyframe_prompt(era, scene, beat["title_cn"],
                                                  beat["title_en"], aspect)
             shot["keyframe_prompt"] = prompt
-            specs[key] = (lambda p=prompt: prov.submit_image(IMAGE_MODEL, p,
-                                                             aspect_ratio=aspect, resolution="2k"))
+            specs[key] = (lambda p=prompt: prov.submit_image(img_model, p,
+                                                             **image_params(img_model, aspect, img_res)))
             by_key[key] = shot
 
     done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=300)

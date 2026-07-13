@@ -17,8 +17,9 @@ credentials.json
 token.json
 *.key
 
-# internal working notes (Chinese-only; kept local, not published)
+# internal working notes (kept local, not published)
 PROGRESS.md
+PROMO_SUBMISSIONS.md
 
 # references/: publish only the English .md docs; keep local reference
 # material (videos, images, non-English notes) out of the repo

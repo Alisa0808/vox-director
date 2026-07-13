@@ -134,6 +134,26 @@ def resolve_theme(name):
     return THEME_PRESETS.get(name)
 
 
+# GPT-Image takes absolute size + quality; nano-banana/seedream/etc take aspect_ratio + resolution.
+_GPT_SIZE = {
+    "16:9": {"1k": "1536x1024", "2k": "2048x1152", "4k": "3840x2160"},
+    "9:16": {"1k": "1024x1536", "2k": "1152x2048", "4k": "2160x3840"},
+    "1:1":  {"1k": "1024x1024", "2k": "2048x2048", "4k": "2048x2048"},
+    "3:4":  {"1k": "768x1024",  "2k": "2160x2880", "4k": "2160x2880"},
+    "4:3":  {"1k": "1024x768",  "2k": "2880x2160", "4k": "2880x2160"},
+}
+_GPT_QUALITY = {"1k": "medium", "2k": "high", "4k": "high"}
+
+
+def image_params(model, aspect="16:9", resolution="1k"):
+    """Per-model text-to-image params. GPT-Image needs size+quality; most other
+    text-to-image models (nano-banana, seedream, ...) take aspect_ratio + resolution."""
+    if "gpt-image" in model:
+        return {"size": _GPT_SIZE.get(aspect, {}).get(resolution, "1024x1024"),
+                "quality": _GPT_QUALITY.get(resolution, "medium")}
+    return {"aspect_ratio": aspect, "resolution": resolution}
+
+
 def _headline(title_cn, title_en, style, type_style=None):
     if title_cn:                                   # bilingual (CJK styles)
         return (" " + TITLE_TREATMENT.format(title_cn=title_cn, title_en=title_en))

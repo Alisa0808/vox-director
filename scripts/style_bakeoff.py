@@ -17,7 +17,7 @@ import os
 import sys
 
 from provider import get_provider, run_jobs
-from styles import compose_collage_prompt, STYLE_LIBRARY, THEME_PRESETS, resolve_theme
+from styles import compose_collage_prompt, STYLE_LIBRARY, THEME_PRESETS, resolve_theme, image_params
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
 # candidates are THEME names (full look bundles); Claude picks topic-fitting ones
@@ -33,6 +33,8 @@ def run(project_dir, styles=None, beat_index=0):
     with open(os.path.join(project_dir, "beats.json")) as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
+    img_model = doc.get("image_model", IMAGE_MODEL)
+    img_res = doc.get("image_resolution", "1k")
     beat = doc["beats"][beat_index]
     shot = first_shot(beat)
     scene, bg = shot["scene"], beat.get("bg", "warm ochre")
@@ -46,8 +48,8 @@ def run(project_dir, styles=None, beat_index=0):
         prompt = compose_collage_prompt(scene, tcn, ten, bg, aspect,
                                         style=tp.get("idiom", name), palette=tp.get("palette"),
                                         type_style=tp.get("type_style"), finish=tp.get("finish"))
-        specs[name] = (lambda p=prompt: prov.submit_image(IMAGE_MODEL, p,
-                                                          aspect_ratio=aspect, resolution="2k"))
+        specs[name] = (lambda p=prompt: prov.submit_image(img_model, p,
+                                                          **image_params(img_model, aspect, img_res)))
         tag = "library" if name in STYLE_LIBRARY else "custom"
         print(f"[{name}] ({tag}) queued")
 

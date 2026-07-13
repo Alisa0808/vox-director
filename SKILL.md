@@ -138,6 +138,8 @@ Add a `shots` array to each beat (see schema). Give each shot its own short `sce
   "theme": "american-retro",              // THEME_PRESET (styles.THEME_PRESETS) — the LOOK layer
   "arc": "timeline",                      // narrative arc (beat-layer.md) — the STORY skeleton
   "video_model": "google/gemini-omni-flash/image-to-video",  // Kling for real people
+  "image_model": "google/nano-banana-2/text-to-image",       // keyframes; or openai/gpt-image-2/text-to-image
+  "image_resolution": "1k",               // 1k (default) | 2k | 4k
   "motion_style": "punchy",               // amplitude: calm | punchy | max (theme sets a default)
   "constraints": "strict",                // strict = defect guards on | loose = let AI explore + re-roll
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},
@@ -173,7 +175,8 @@ Model IDs change — fetch the live list first: `GET https://api.atlascloud.ai/a
 
 | Job | Model | Note |
 |---|---|---|
-| Keyframe / collage poster | `google/nano-banana-2/text-to-image` | renders CN+EN text well |
+| Keyframe / collage poster | `google/nano-banana-2/text-to-image` | default; renders CN+EN text well; `image_resolution` 1k/2k/4k |
+| Keyframe (alternative) | `openai/gpt-image-2/text-to-image` | set via `image_model`; size+quality auto-mapped from aspect+resolution |
 | Cut out an element | `youchuan/v8.1/remove-background` | advanced path only |
 | Animate (non-real content) | `google/gemini-omni-flash/image-to-video` | keeps text stable, layered motion |
 | Animate (**real people / brands**) | `kwaivgi/kling-video-o3-pro/image-to-video` | Omni & Seedance BLOCK celebrities |

@@ -108,6 +108,8 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
   "theme": "american-retro",              // 主题预置(styles.THEME_PRESETS)——"看的层"
   "arc": "timeline",                      // 叙事弧(beat-layer.md)——"故事骨架"
   "video_model": "google/gemini-omni-flash/image-to-video",  // 真人用 Kling
+  "image_model": "google/nano-banana-2/text-to-image",       // 关键帧;也可换 openai/gpt-image-2/text-to-image
+  "image_resolution": "1k",               // 1k(默认)| 2k | 4k
   "motion_style": "punchy",               // 幅度:calm | punchy | max(主题给默认)
   "constraints": "strict",                // strict = 开防缺陷护栏 | loose = 放开探索 + 抽卡
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},
@@ -142,7 +144,8 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 
 | 环节 | 模型 | 说明 |
 |---|---|---|
-| 关键帧 / 拼贴海报 | `google/nano-banana-2/text-to-image` | 中英文字都好 |
+| 关键帧 / 拼贴海报 | `google/nano-banana-2/text-to-image` | 默认;中英文字都好;`image_resolution` 1k/2k/4k |
+| 关键帧(备选)| `openai/gpt-image-2/text-to-image` | 设 `image_model` 即用;size+quality 按 aspect+分辨率自动映射 |
 | 抠单个零件 | `youchuan/v8.1/remove-background` | 仅高阶路线 |
 | 动效(非真人) | `google/gemini-omni-flash/image-to-video` | 文字稳、分层运动 |
 | 动效(**真人 / 品牌**) | `kwaivgi/kling-video-o3-pro/image-to-video` | Omni 和 Seedance 拦名人 |

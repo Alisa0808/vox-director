@@ -104,6 +104,7 @@ def run(project_dir, only=None):
     motion_style = doc.get("motion_style") or _theme.get("motion_style", "punchy")  # calm|punchy|max
     constraints = doc.get("constraints", "strict")   # strict = defect guards on | loose = explore
     model = doc.get("video_model", VIDEO_MODEL)   # Seedance for real people; Omni otherwise
+    vid_res = doc.get("video_resolution", "720p")  # 720p default; Seedance also 480p/1080p (Omni is 720p-only)
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(clip_dir, exist_ok=True)
 
@@ -134,7 +135,7 @@ def run(project_dir, only=None):
             dur = int(shot.get("dur", 10))
             if "seedance" in model:                 # ratio (not aspect_ratio); real-person OK
                 params = dict(image=url, duration=dur, ratio=aspect,
-                              resolution="1080p", generate_audio=False)
+                              resolution=vid_res, generate_audio=False)
             elif "kling" in model:                   # no aspect param (follows input); allows real people
                 params = dict(image=url, duration=dur, sound=False)
             else:                                    # gemini omni flash

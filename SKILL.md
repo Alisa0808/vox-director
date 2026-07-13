@@ -140,6 +140,7 @@ Add a `shots` array to each beat (see schema). Give each shot its own short `sce
   "video_model": "google/gemini-omni-flash/image-to-video",  // Kling for real people
   "image_model": "google/nano-banana-2/text-to-image",       // keyframes; or openai/gpt-image-2/text-to-image
   "image_resolution": "1k",               // 1k (default) | 2k | 4k
+  "video_resolution": "720p",             // 720p (default); Seedance also 480p/1080p (Omni is 720p-only)
   "motion_style": "punchy",               // amplitude: calm | punchy | max (theme sets a default)
   "constraints": "strict",                // strict = defect guards on | loose = let AI explore + re-roll
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},

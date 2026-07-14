@@ -8,6 +8,12 @@ An **agent skill** that runs end to end on the [Atlas Cloud](https://www.atlascl
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Agent Skill](https://img.shields.io/badge/Agent-Skill-d97757.svg)
 
+https://github.com/user-attachments/assets/216cd62f-6314-456c-94cf-1090b8559a22
+
+<p align="center">
+  <em>▶ "How football conquered the world" · 60s · landscape</em>
+</p>
+
 https://github.com/user-attachments/assets/561788b1-5615-4828-b3f8-b24ae5ad7bcd
 
 <p align="center">

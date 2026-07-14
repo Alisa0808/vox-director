@@ -8,29 +8,28 @@ An **agent skill** that runs end to end on the [Atlas Cloud](https://www.atlascl
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Agent Skill](https://img.shields.io/badge/Agent-Skill-d97757.svg)
 
-https://github.com/user-attachments/assets/216cd62f-6314-456c-94cf-1090b8559a22
-
-<p align="center">
-  <em>▶ "How football conquered the world" · 60s · landscape</em>
-</p>
-
-https://github.com/user-attachments/assets/561788b1-5615-4828-b3f8-b24ae5ad7bcd
-
-<p align="center">
-  <em>▶ "Mexican street food" · 60s · landscape</em>
-</p>
+<div align="center">
 
 https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 
-<p align="center">
-  <em>▶ "The evolution of Chinese civilization" · 30s · landscape</em>
-</p>
+<b>▶ "The evolution of Chinese civilization" · 30s</b>
 
-https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0
+</div>
 
-<p align="center">
-  <em>▶ "A brief history of money" · 60s · vertical</em>
-</p>
+<table>
+  <tr>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/216cd62f-6314-456c-94cf-1090b8559a22"><img src="assets/thumbs/football.jpg" width="100%" alt="How football conquered the world"></a></td>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/561788b1-5615-4828-b3f8-b24ae5ad7bcd"><img src="assets/thumbs/mexican.jpg" width="100%" alt="Mexican street food"></a></td>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0"><img src="assets/thumbs/money.jpg" width="100%" alt="A brief history of money"></a></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Football history · 60s</sub></td>
+    <td align="center"><sub>Mexican street food · 60s</sub></td>
+    <td align="center"><sub>A brief history of money · 60s</sub></td>
+  </tr>
+</table>
+
+<p align="center"><sub><em>▶ more films — click any thumbnail to play</em></sub></p>
 
 ---
 

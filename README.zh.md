@@ -8,29 +8,28 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-black.svg) ![Powered by Atlas Cloud](https://img.shields.io/badge/powered%20by-Atlas%20Cloud-ff5a1f.svg) ![Agent Skill](https://img.shields.io/badge/Agent-Skill-d97757.svg)
 
-https://github.com/user-attachments/assets/216cd62f-6314-456c-94cf-1090b8559a22
-
-<p align="center">
-  <em>▶《足球如何征服世界》· 60 秒 · 横屏</em>
-</p>
-
-https://github.com/user-attachments/assets/561788b1-5615-4828-b3f8-b24ae5ad7bcd
-
-<p align="center">
-  <em>▶《墨西哥街头美食》· 60 秒 · 横屏</em>
-</p>
+<div align="center">
 
 https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 
-<p align="center">
-  <em>▶《中华文明的变迁》· 30 秒 · 横屏</em>
-</p>
+<b>▶《中华文明的变迁》· 30 秒</b>
 
-https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0
+</div>
 
-<p align="center">
-  <em>▶《货币简史》· 60 秒 · 竖屏</em>
-</p>
+<table>
+  <tr>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/216cd62f-6314-456c-94cf-1090b8559a22"><img src="assets/thumbs/football.jpg" width="100%" alt="足球如何征服世界"></a></td>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/561788b1-5615-4828-b3f8-b24ae5ad7bcd"><img src="assets/thumbs/mexican.jpg" width="100%" alt="墨西哥街头美食"></a></td>
+    <td width="33%"><a href="https://github.com/user-attachments/assets/f69f072f-f50a-41ba-9e66-7ed0aae4ddc0"><img src="assets/thumbs/money.jpg" width="100%" alt="货币简史"></a></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>足球如何征服世界 · 60 秒</sub></td>
+    <td align="center"><sub>墨西哥街头美食 · 60 秒</sub></td>
+    <td align="center"><sub>货币简史 · 60 秒</sub></td>
+  </tr>
+</table>
+
+<p align="center"><sub><em>▶ 更多影片 —— 点击任意封面播放</em></sub></p>
 
 ---
 

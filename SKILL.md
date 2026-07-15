@@ -148,6 +148,7 @@ Add a `shots` array to each beat (see schema). Give each shot its own short `sce
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},  // pick per topic/language — see references/voices.md
   "music": "epic cinematic orchestral, instrumental, no vocals",
   "mix": {"music": 0.6, "voice": 1.25},   // audio balance — optional; these are the defaults (BGM ducks under the VO)
+  "caption_style": "white",               // white (default: clean white subtitle) | paper (cream cut-out collage look)
   "watermark": "Made with Atlas Cloud",
   "beats": [
     {

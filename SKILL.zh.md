@@ -116,6 +116,7 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},  // 按主题/语种挑 —— 见 references/voices.md
   "music": "epic cinematic orchestral, instrumental, no vocals",
   "mix": {"music": 0.6, "voice": 1.25},   // 音量平衡(可选;这是默认值,音乐在人声下自动让路)
+  "caption_style": "white",               // white(默认:干净白字幕)| paper(奶油剪纸拼贴风)
   "watermark": "Made with Atlas Cloud",
   "beats": [
     {

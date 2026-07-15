@@ -51,6 +51,7 @@ def run(project_dir):
     mix = doc.get("mix", {})                      # per-project audio balance (optional)
     music_vol = float(mix.get("music", 0.6))      # BGM level (was a fixed 0.9 — lowered so VO leads)
     voice_vol = float(mix.get("voice", 1.25))     # narration boost before the duck + final mix
+    cap_style = doc.get("caption_style", "white") # white (default, clean) | paper (collage)
     tmp = os.path.join(project_dir, "_seg")
     os.makedirs(tmp, exist_ok=True)
 
@@ -106,10 +107,12 @@ def run(project_dir):
     for bs in beat_spans:
         beat = bs["beat"]
         p = os.path.join(tmp, f"cap_{beat['id']}.png")
-        kf = next((s["keyframe_path"] for s in (beat.get("shots") or [beat])
-                   if s.get("keyframe_path") and os.path.exists(s["keyframe_path"])), None)
-        acc = text_overlay.accent_color(kf) if kf else None
-        text_overlay.render_caption(beat["narration"], p, W, H, accent=acc)
+        acc = None
+        if cap_style == "paper":                  # only the paper style uses a per-beat keyline
+            kf = next((s["keyframe_path"] for s in (beat.get("shots") or [beat])
+                       if s.get("keyframe_path") and os.path.exists(s["keyframe_path"])), None)
+            acc = text_overlay.accent_color(kf) if kf else None
+        text_overlay.render_caption(beat["narration"], p, W, H, accent=acc, style=cap_style)
         cap_pngs.append(p)
     wm_png = text_overlay.render_watermark(wm_text, os.path.join(tmp, "wm.png"), W, H)
 

@@ -229,6 +229,7 @@ hand-writing each prompt. The library (`styles.THEME_PRESETS`):
 | `70s-groovy` | 1970s | mustard/rust/avocado | bulbous display serif | riso grain | punchy | culture, food, nostalgia |
 | `chinese-ink` | Chinese woodblock/ink | ink + vermilion | Chinese brush + red seal | rice-paper, seal | calm/punchy | Chinese history/culture |
 | `atomic-age` | 1950s futurism | teal/orange/cream | atomic script | halftone | punchy | science, space, future |
+| `newsprint-editorial` | mid-century front-page news feature | cream/deep red/mustard/charcoal | bold condensed newsprint headline | aged paper, heavy halftone | punchy | news, AI/tech explainers, editorial features |
 
 **How to use:** the agent reads the topic → suggests 3–4 fitting presets (or composes a new one
 by mixing the banks in §1–§2) → `style_bakeoff.py` renders one beat in each → the user picks. The

@@ -58,13 +58,15 @@ This is the default, most-automated path. Every stage is one script, all driven 
    count per duration (30s→6–8, 60s→10–12); split each beat into **2 shots** (wide+detail) with
    **per-shot `camera_move` VARIED across adjacent beats** (never repeat; `static` on the payoff)
    and **rich `element_motion`** (see step 4). Each beat: `narration`, `title_cn`/`title_en`,
-   `scene`, `bg`, `feel`, `hook`. This draft is the **one mandatory approval gate** — show the
-   user the beat map before generating. Examples in `examples/`.
+   `scene`, `bg`, `feel`, `hook`. This draft is the **first mandatory approval gate** — show the
+   user the beat map before generating (the aspect-routing approximation in step 4 is the other
+   one). Examples in `examples/`.
 
 2. **Pick the visual style (hybrid — do this BEFORE keyframes).** Do not reuse one house style
    for every topic. Read `references/prompt-guide.md` (§5 theme presets); pick 3–4 **theme presets**
    (`styles.THEME_PRESETS`: `american-retro`, `swiss-modern`, `punk-zine`,
-   `soviet-constructivist`, `wpa-propaganda`, `70s-groovy`, `chinese-ink`, `atomic-age`) that fit
+   `soviet-constructivist`, `wpa-propaganda`, `70s-groovy`, `chinese-ink`, `atomic-age`,
+   `newsprint-editorial`) that fit
    the topic's era/culture/tone — **or compose a custom theme** by mixing the prompt-guide dimensions
    (medium/era/palette/type/finish) when none fit. Match the topic, **not** the language (an
    English film on Chinese history should look Chinese). A theme bundles the whole LOOK layer
@@ -96,6 +98,13 @@ This is the default, most-automated path. Every stage is one script, all driven 
    text is hard-protected only on shots that have a title** (detail shots without a headline are
    free to go wild). For **real people / brand logos**, Omni & Seedance refuse — set
    `"video_model": "kwaivgi/kling-video-o3-pro/image-to-video"`.
+   **Aspect routing** (`styles.resolve_video_aspect`, second approval gate): `clips.py` resolves
+   `doc["aspect"]` against the chosen `video_model`'s own supported ratios — exact match wins;
+   Omni is 16:9/9:16 only, Kling reference-to-video adds 1:1, Kling image-to-video/video-edit and
+   Seedance just follow the input/ratio param. When there's no exact match it picks the nearest
+   ratio but **stops and asks you to confirm** (set `"aspect_approx_confirmed": true` once you
+   have) rather than silently reframing the film — every clip in one run shares the same resolved
+   aspect so the finished film is never mixed.
 
 5. **Voice + music.** `python3 scripts/audio.py out/<project>`
    One consistent narrator via **xai/tts-v1** + instrumental BGM via **minimax/music-2.6**.

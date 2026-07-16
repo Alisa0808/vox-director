@@ -46,11 +46,12 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
    `out/<project>/beats.json`:**第1段标题必须是 ≤3 秒的钩子**;beat 数量按时长(30s→6–8,60s→10–12);
    每段拆 **2 镜**(广角+特写),**每镜 `camera_move` 相邻段要不同**(不重复;`static` 留给点题段),
    **`element_motion` 写丰富**(见第4步)。每段:`narration`、`title_cn`/`title_en`、`scene`、`bg`、
-   `feel`、`hook`。这份草稿是**唯一强制确认关口**——生成前先给用户过。示例见 `examples/`。
+   `feel`、`hook`。这份草稿是**第一个强制确认关口**——生成前先给用户过(第4步的画幅近似值是第二个)。示例见 `examples/`。
 
 2. **选视觉风格(混合式——在生关键帧前做)。** 别所有主题都用一个风格。读 `references/prompt-guide.md`(§5 主题预置);
    从 **主题预置**(`styles.THEME_PRESETS`:`american-retro`、`swiss-modern`、`punk-zine`、
-   `soviet-constructivist`、`wpa-propaganda`、`70s-groovy`、`chinese-ink`、`atomic-age`)里挑 3–4 个
+   `soviet-constructivist`、`wpa-propaganda`、`70s-groovy`、`chinese-ink`、`atomic-age`、
+   `newsprint-editorial`)里挑 3–4 个
    贴主题(年代/文化/调性)的,**库里没有就现调一个**(混 prompt-guide 的 媒介/年代/配色/字体/质感)。
    **匹配主题、不匹配语言**(英文讲中国史照样该中式)。一个主题打包整个"看的层"
    (idiom+配色+字体+质感+情绪+运动)。跑 bake-off 让用户看图 pick——AI 出主意、库保底、人拍板。
@@ -75,6 +76,11 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
    护栏——平面2D/单向/不 morph,适合重文字讲解片)或 `loose`(放开让模型探索 3D/大胆运镜,抽卡重滚)。
    **只有带标题的镜头才硬锁文字**(无标题的特写镜随便浪)。**真人 / 品牌 logo**:Omni 和 Seedance 会拒——设
    `"video_model": "kwaivgi/kling-video-o3-pro/image-to-video"`。
+   **画幅路由**(`styles.resolve_video_aspect`,第二个确认关口):`clips.py` 会把 `doc["aspect"]` 拿去跟选定
+   `video_model` 自己支持的比例做匹配——能精确匹配就直接用;Omni 只有 16:9/9:16,Kling reference-to-video
+   多一个 1:1,Kling image-to-video/video-edit 和 Seedance 则跟随输入/ratio 参数走。**匹配不上时会选最近似的
+   比例,但会停下来要求你确认**(确认后设 `"aspect_approx_confirmed": true`),不会默默改画幅——同一次运行里
+   所有镜头都用同一个已解析比例,成片不会混画幅。
 
 5. **旁白 + 配乐。** `python3 scripts/audio.py out/<project>`
    用 **xai/tts-v1** 出单一音色旁白 + **minimax/music-2.6** 出器乐 BGM。**按主题+语种挑 `voice_id`**(别只用默认)—— 见 `references/voices.md`(5 个多语种 + ~66 个各语种母语音色,标了性别);默认 `leo`(男、纪录片感)。

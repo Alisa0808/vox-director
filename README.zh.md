@@ -111,7 +111,7 @@ SKILL.md              技能本体(英文)——agent 遵循的工作流
 SKILL.zh.md           同一技能的中文版
 AGENTS.md             非 Claude agent(Codex 等)的入口
 references/           创意引擎
-  prompt-guide.md       画面/LOOK 层:提示词结构 + 词库 + 8 套主题预设
+  prompt-guide.md       画面/LOOK 层:提示词结构 + 词库 + 9 套主题预设
   beat-layer.md         14 种叙事弧线 + 钩子/节奏 + 镜头模式
   voices.md             xai/tts 音色表 —— 按语种/调性挑 voice_id
   models-and-gotchas.md 每一个 API / ffmpeg 坑,都已填平

@@ -138,6 +138,41 @@ A common mistake is one long shot per beat. On a 9:16 / social piece especially,
 Add a `shots` array to each beat (see schema). Give each shot its own short `scene` and
 `motion`; set `"title": true` only on the wide shot so the headline shows once per beat.
 
+## A-roll mode (talking-head → collage)
+
+The standard workflow above is **B-roll**: a topic becomes AI-generated collage posters
+that get animated. **A-roll is the reverse case** — the user already has a real recorded
+talking-head video (a presenter speaking to camera) and wants it *itself* turned into the
+collage look, keeping their actual performance (face, lip movement, gestures) intact. There
+is no poster to generate; the "keyframe" is the presenter's own footage. Use A-roll when the
+user gives you a video file of themselves/a presenter talking, not a topic to write from
+scratch.
+
+1. **Transcribe + auto-segment.** `python3 scripts/asr_beats.py <project_dir> <source.mp4>`
+   Runs xai/stt-v1 on the source's own audio and cuts it into beats at sentence-ending
+   punctuation or natural pause gaps (never exceeding ~9.5s, under Omni/Kling video-edit's
+   10s per-call cap). Writes `beats.json` with each beat's `start`/`end`/`text` — **this is
+   the same mandatory approval gate as the B-roll beat map**: review it, set `"theme"` (run
+   `style_bakeoff.py` the same way — the presenter's segment works fine as the bake-off
+   source), and optionally fill in a `content_beats` string per beat (a sticker/stamp idea
+   to layer in) before generating anything.
+
+2. **Generate.** `python3 scripts/aroll_clips.py <project_dir> [only_ids]`
+   Cuts each beat's time range out of the source, uploads it, and re-styles it with a
+   **photographic paper-cutout sticker** treatment on the presenter — her real likeness,
+   lip movement, eye-line and gestures follow the source frame-for-frame; only the
+   silhouette edge and the world around her are paper-collage. Default model is
+   `google/gemini-omni-flash/video-edit`; any beat it rejects automatically retries on
+   `bytedance/seedance-2.0/reference-to-video` (set via `video_model`/`video_model_fallback`
+   in beats.json). **Never ask the model to redraw or halftone-texture the face itself** —
+   that gets rejected regardless of how the prompt is worded (tried both a strong and a
+   softened phrasing; both failed). Uses the same aspect-routing confirm gate as `clips.py`.
+
+3. **Assemble.** `python3 scripts/aroll_assemble.py <project_dir>`
+   Muxes each generated clip with the *original* beat segment's own audio (never whatever
+   audio the video model produced) so lip-sync is guaranteed regardless of which model
+   handled that beat, normalizes every beat to one canvas, and concats into `final.mp4`.
+
 ## beats.json schema
 
 ```json

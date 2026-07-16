@@ -103,6 +103,32 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 - 广角当 shot `a` 复用;特写 shot `b` 另写更紧的场景。`keyframes.py` 会**跳过已有 `keyframe_url` 的镜**,
   所以加 `b` 镜重跑只生成新的。
 
+## A-roll 模式(数字人口播 → 拼贴)
+
+上面的标准流程是 **B-roll**:一个主题被写成 AI 生成的拼贴海报再动起来。**A-roll 是反过来的场景**
+——用户已经有一段真实录制的数字人口播视频(真人对镜头说话),想把这段视频**本身**变成拼贴风格,
+同时保留她的真实表演(脸、口型、手势)。这里没有海报要生成;"关键帧"就是主播本人的真实素材。
+当用户给的是一段真人/主播说话的视频文件,而不是要从零写的主题时,走这条路。
+
+1. **转录 + 自动切分。** `python3 scripts/asr_beats.py <project_dir> <source.mp4>`
+   对源视频自带的音轨跑 xai/stt-v1,按句尾标点或自然停顿把它切成多段(不超过 ~9.5s,压在
+   Omni/Kling video-edit 单次调用 10s 上限内)。写出 `beats.json`,每段带 `start`/`end`/`text`
+   ——**这是跟 B-roll 分镜表一样的强制确认关口**:先过一遍,设好 `"theme"`(照样跑
+   `style_bakeoff.py`,直接用主播这段素材当 bake-off 源即可),想加就给某段填一句
+   `content_beats`(贴纸/印章创意),再进入生成。
+
+2. **生成。** `python3 scripts/aroll_clips.py <project_dir> [only_ids]`
+   从源视频切出每段的时间范围、上传,再套上**摄影质感的纸片贴纸**处理——主播的真实长相、
+   口型、眼神、手势逐帧跟随源视频,只有轮廓边缘和周围世界是拼贴风格。默认模型是
+   `google/gemini-omni-flash/video-edit`;任何一段被它拒绝都会自动重试
+   `bytedance/seedance-2.0/reference-to-video`(可在 beats.json 里用 `video_model`/
+   `video_model_fallback` 改)。**千万别要求模型把脸本身重绘/半调网点化**——不管措辞多软化
+   都会被拒(强硬版、软化版都试过,都失败)。画幅路由确认关卡跟 `clips.py` 共用同一套。
+
+3. **合成。** `python3 scripts/aroll_assemble.py <project_dir>`
+   把每段生成的画面跟**原始**那段音频(而不是视频模型自己出的音频)对上,保证不管哪个模型
+   处理了这段,口型都对得上;再把每段统一到同一画幅,拼接成 `final.mp4`。
+
 ## beats.json schema
 
 ```json

@@ -63,6 +63,19 @@ def _get(path: str, base: str = MEDIA_BASE, timeout: int = 60, retries: int = 3)
             req = urllib.request.Request(base + path, headers=_headers(json_body=False))
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return json.load(r)
+        except urllib.error.HTTPError as e:
+            # A prediction that failed upstream (e.g. a content-policy rejection) can
+            # come back wrapped in a non-2xx status, but the body is still the normal
+            # JSON envelope with the real status/error_code -- `except URLError` below
+            # would catch this too (HTTPError subclasses it) but collapses it to a bare
+            # "HTTP Error 400: Bad Request" and throws the diagnosis away. Parse it and
+            # hand it back like any other response so callers see the real status.
+            body = e.read().decode(errors="replace")
+            try:
+                return json.loads(body)
+            except ValueError:
+                last = AtlasCloudError(f"GET {path} -> {e.code}: {body[:400]}")
+                break
         except (urllib.error.URLError, TimeoutError) as e:  # transient
             last = e
             time.sleep(2 ** i)
@@ -92,6 +105,33 @@ def submit_media(model: str, **params) -> str:
     (audio/TTS, music, etc.); return prediction id."""
     body = {"model": model, **params}
     return _post("/model/generateVideo", body)["data"]["id"]
+
+
+def transcribe(audio_url: str, interval: int = 3, timeout_s: int = 300, **params) -> dict:
+    """Blocking ASR via xai/stt-v1. Returns the full stt_result: {"text", "language",
+    "duration", "words": [{"text","start","end"}, ...]} (word-level timestamps).
+
+    Submits to /model/generateAudio (the model's real endpoint per its schema),
+    NOT /model/generateVideo like submit_media -- and polls for the raw stt_result
+    dict directly rather than going through poll()/get_status(), because those only
+    surface outputs[0] (the plain transcript string) and would silently drop the
+    word timestamps this exists to fetch.
+    """
+    body = {"model": "xai/stt-v1", "audio": audio_url, **params}
+    pid = _post("/model/generateAudio", body)["data"]["id"]
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        time.sleep(interval)
+        d = _get(f"/model/prediction/{pid}").get("data", {})
+        status = d.get("status", "?")
+        if status in ("completed", "succeeded"):
+            result = d.get("stt_result")
+            if not result:
+                raise AtlasCloudError(f"{pid}: completed but no stt_result")
+            return result
+        if status == "failed":
+            raise AtlasCloudError(f"{pid} failed: {json.dumps(d)[:300]}")
+    raise AtlasCloudError(f"{pid} timed out after {timeout_s}s")
 
 
 def poll(prediction_id: str, interval: int = 3, timeout_s: int = 900) -> str:

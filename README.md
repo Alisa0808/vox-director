@@ -111,7 +111,7 @@ SKILL.md              the skill (English) — the workflow the agent follows
 SKILL.zh.md           the same skill in Chinese
 AGENTS.md             entry point for non-Claude agents (Codex, …)
 references/           the creative engine
-  prompt-guide.md       the LOOK layer — prompt structures, vocab & 8 theme presets
+  prompt-guide.md       the LOOK layer — prompt structures, vocab & 9 theme presets
   beat-layer.md         14 narrative arcs + hook/pacing + shot patterns
   voices.md             xai/tts voice roster — pick a voice_id per language/tone
   models-and-gotchas.md every API / ffmpeg gotcha, already solved

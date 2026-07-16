@@ -95,6 +95,13 @@ STYLE_LIBRARY = {
         "Mixed-media collage of Chinese woodblock-print and ink-mural cut-out figures, aged "
         "rice-paper and Chinese newspaper clippings, vermilion seal stamps. Oriental, historical."
     ),
+    "newsprint-editorial": (
+        "Vintage newsprint editorial collage in the style of a mid-century front-page news "
+        "feature: bold cut-out photographs and illustrations laid over a broadsheet newspaper "
+        "page, heavy halftone print dots, aged newsprint texture with slight ink "
+        "misregistration, tactile cinematic editorial energy — reads like a newspaper feature "
+        "spread brought to life, not an ad."
+    ),
 }
 DEFAULT_STYLE = "american-retro"
 
@@ -126,6 +133,9 @@ THEME_PRESETS = {
     "atomic-age": {"idiom": "1950s atomic-age retro-futurism", "palette": "teal, orange, cream",
         "type_style": "atomic script + geometric caps", "finish": "halftone, starbursts",
         "mood": "optimistic, bright", "motion_style": "punchy"},
+    "newsprint-editorial": {"idiom": "newsprint-editorial", "palette": "cream white, deep red, mustard yellow, charcoal black",
+        "type_style": "bold condensed newsprint headlines, all-caps", "finish": "aged paper, heavy halftone dots, high contrast, slight print misregistration",
+        "mood": "energetic, tactile, cinematic editorial", "motion_style": "punchy"},
 }
 
 
@@ -152,6 +162,53 @@ def image_params(model, aspect="16:9", resolution="1k"):
         return {"size": _GPT_SIZE.get(aspect, {}).get(resolution, "1024x1024"),
                 "quality": _GPT_QUALITY.get(resolution, "medium")}
     return {"aspect_ratio": aspect, "resolution": resolution}
+
+
+# ---- Video-model aspect routing -------------------------------------------------
+# Each video model natively accepts a fixed enum of aspect ratios, or none at all
+# (it just follows whatever the input image/video already is). None = "follows input".
+VIDEO_ASPECT_SUPPORT = {
+    "gemini-omni-flash/image-to-video": ["16:9", "9:16"],
+    "gemini-omni-flash/video-edit": None,
+    "seedance-2.0/reference-to-video": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21", "adaptive"],
+    "kling-video-o3-pro/reference-to-video": ["16:9", "9:16", "1:1"],
+    "kling-video-o3-pro/image-to-video": None,
+    "kling-video-o3-pro/video-edit": None,
+}
+
+
+def _aspect_value(aspect):
+    w, h = aspect.split(":")
+    return float(w) / float(h)
+
+
+def resolve_video_aspect(project_aspect, model):
+    """Route the project's target aspect (`doc["aspect"]`) to what `model` actually
+    accepts. Rule (Kiana, 2026-07-16): prefer the exact same ratio as the project's
+    target; if the model has no matching enum value, fall back to the nearest one —
+    but that fallback is an approximation and the caller MUST surface it for human
+    confirmation before generating (see clips.py), never apply it silently. Every
+    shot in one project run resolves through this same function with the same
+    project_aspect, so a finished film never mixes aspect ratios across clips.
+
+    Returns (resolved_aspect_or_None, exact). resolved_aspect is None when the model
+    has no enum at all (it just follows the input, nothing to pass/confirm).
+    """
+    support = None
+    for key, enum in VIDEO_ASPECT_SUPPORT.items():
+        if key in model:
+            support = enum
+            break
+    if support is None:                  # unknown model, or a "follows input" model
+        return None, True
+    if project_aspect in support:
+        return project_aspect, True
+    if project_aspect == "adaptive":
+        return ("adaptive" if "adaptive" in support else support[0]), True
+    target = _aspect_value(project_aspect)
+    nearest = min((a for a in support if a != "adaptive"),
+                  key=lambda a: abs(_aspect_value(a) - target))
+    return nearest, False
 
 
 def _headline(title_cn, title_en, style, type_style=None):

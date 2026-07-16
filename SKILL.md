@@ -58,13 +58,15 @@ This is the default, most-automated path. Every stage is one script, all driven 
    count per duration (30s→6–8, 60s→10–12); split each beat into **2 shots** (wide+detail) with
    **per-shot `camera_move` VARIED across adjacent beats** (never repeat; `static` on the payoff)
    and **rich `element_motion`** (see step 4). Each beat: `narration`, `title_cn`/`title_en`,
-   `scene`, `bg`, `feel`, `hook`. This draft is the **one mandatory approval gate** — show the
-   user the beat map before generating. Examples in `examples/`.
+   `scene`, `bg`, `feel`, `hook`. This draft is the **first mandatory approval gate** — show the
+   user the beat map before generating (the aspect-routing approximation in step 4 is the other
+   one). Examples in `examples/`.
 
 2. **Pick the visual style (hybrid — do this BEFORE keyframes).** Do not reuse one house style
    for every topic. Read `references/prompt-guide.md` (§5 theme presets); pick 3–4 **theme presets**
    (`styles.THEME_PRESETS`: `american-retro`, `swiss-modern`, `punk-zine`,
-   `soviet-constructivist`, `wpa-propaganda`, `70s-groovy`, `chinese-ink`, `atomic-age`) that fit
+   `soviet-constructivist`, `wpa-propaganda`, `70s-groovy`, `chinese-ink`, `atomic-age`,
+   `newsprint-editorial`) that fit
    the topic's era/culture/tone — **or compose a custom theme** by mixing the prompt-guide dimensions
    (medium/era/palette/type/finish) when none fit. Match the topic, **not** the language (an
    English film on Chinese history should look Chinese). A theme bundles the whole LOOK layer
@@ -96,6 +98,13 @@ This is the default, most-automated path. Every stage is one script, all driven 
    text is hard-protected only on shots that have a title** (detail shots without a headline are
    free to go wild). For **real people / brand logos**, Omni & Seedance refuse — set
    `"video_model": "kwaivgi/kling-video-o3-pro/image-to-video"`.
+   **Aspect routing** (`styles.resolve_video_aspect`, second approval gate): `clips.py` resolves
+   `doc["aspect"]` against the chosen `video_model`'s own supported ratios — exact match wins;
+   Omni is 16:9/9:16 only, Kling reference-to-video adds 1:1, Kling image-to-video/video-edit and
+   Seedance just follow the input/ratio param. When there's no exact match it picks the nearest
+   ratio but **stops and asks you to confirm** (set `"aspect_approx_confirmed": true` once you
+   have) rather than silently reframing the film — every clip in one run shares the same resolved
+   aspect so the finished film is never mixed.
 
 5. **Voice + music.** `python3 scripts/audio.py out/<project>`
    One consistent narrator via **xai/tts-v1** + instrumental BGM via **minimax/music-2.6**.
@@ -128,6 +137,41 @@ A common mistake is one long shot per beat. On a 9:16 / social piece especially,
 
 Add a `shots` array to each beat (see schema). Give each shot its own short `scene` and
 `motion`; set `"title": true` only on the wide shot so the headline shows once per beat.
+
+## A-roll mode (talking-head → collage)
+
+The standard workflow above is **B-roll**: a topic becomes AI-generated collage posters
+that get animated. **A-roll is the reverse case** — the user already has a real recorded
+talking-head video (a presenter speaking to camera) and wants it *itself* turned into the
+collage look, keeping their actual performance (face, lip movement, gestures) intact. There
+is no poster to generate; the "keyframe" is the presenter's own footage. Use A-roll when the
+user gives you a video file of themselves/a presenter talking, not a topic to write from
+scratch.
+
+1. **Transcribe + auto-segment.** `python3 scripts/asr_beats.py <project_dir> <source.mp4>`
+   Runs xai/stt-v1 on the source's own audio and cuts it into beats at sentence-ending
+   punctuation or natural pause gaps (never exceeding ~9.5s, under Omni/Kling video-edit's
+   10s per-call cap). Writes `beats.json` with each beat's `start`/`end`/`text` — **this is
+   the same mandatory approval gate as the B-roll beat map**: review it, set `"theme"` (run
+   `style_bakeoff.py` the same way — the presenter's segment works fine as the bake-off
+   source), and optionally fill in a `content_beats` string per beat (a sticker/stamp idea
+   to layer in) before generating anything.
+
+2. **Generate.** `python3 scripts/aroll_clips.py <project_dir> [only_ids]`
+   Cuts each beat's time range out of the source, uploads it, and re-styles it with a
+   **photographic paper-cutout sticker** treatment on the presenter — her real likeness,
+   lip movement, eye-line and gestures follow the source frame-for-frame; only the
+   silhouette edge and the world around her are paper-collage. Default model is
+   `google/gemini-omni-flash/video-edit`; any beat it rejects automatically retries on
+   `bytedance/seedance-2.0/reference-to-video` (set via `video_model`/`video_model_fallback`
+   in beats.json). **Never ask the model to redraw or halftone-texture the face itself** —
+   that gets rejected regardless of how the prompt is worded (tried both a strong and a
+   softened phrasing; both failed). Uses the same aspect-routing confirm gate as `clips.py`.
+
+3. **Assemble.** `python3 scripts/aroll_assemble.py <project_dir>`
+   Muxes each generated clip with the *original* beat segment's own audio (never whatever
+   audio the video model produced) so lip-sync is guaranteed regardless of which model
+   handled that beat, normalizes every beat to one canvas, and concats into `final.mp4`.
 
 ## beats.json schema
 

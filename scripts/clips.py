@@ -12,7 +12,7 @@ import os
 import sys
 
 from provider import get_provider, run_jobs
-from styles import resolve_theme
+from styles import resolve_theme, resolve_video_aspect
 
 VIDEO_MODEL = "google/gemini-omni-flash/image-to-video"
 
@@ -108,6 +108,23 @@ def run(project_dir, only=None):
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(clip_dir, exist_ok=True)
 
+    # Aspect routing: prefer the project's own target aspect; only fall back to an
+    # approximation when this model has no matching enum value, and never apply that
+    # approximation without a human confirming it first (see styles.resolve_video_aspect).
+    resolved_aspect, aspect_exact = resolve_video_aspect(aspect, model)
+    if not aspect_exact:
+        if not doc.get("aspect_approx_confirmed"):
+            print(f"ASPECT MISMATCH: project aspect \"{aspect}\" has no exact match on "
+                  f"{model}; nearest supported is \"{resolved_aspect}\". This changes the "
+                  f"output framing — confirm with the user before generating, then set "
+                  f"\"aspect_approx_confirmed\": true in beats.json to proceed (or pick a "
+                  f"different video_model / aspect).")
+            return
+        print(f"[aspect] using confirmed approximation \"{resolved_aspect}\" for project "
+              f"aspect \"{aspect}\" on {model}")
+    if resolved_aspect:
+        aspect = resolved_aspect   # every shot below shares this one resolved aspect
+
     prov = get_provider(doc.get("provider"))
     specs, by_key = {}, {}
     for beat in doc["beats"]:
@@ -136,7 +153,9 @@ def run(project_dir, only=None):
             if "seedance" in model:                 # ratio (not aspect_ratio); real-person OK
                 params = dict(image=url, duration=dur, ratio=aspect,
                               resolution=vid_res, generate_audio=False)
-            elif "kling" in model:                   # no aspect param (follows input); allows real people
+            elif "kling-video-o3-pro/reference-to-video" in model:  # has an aspect_ratio enum
+                params = dict(image=url, duration=dur, aspect_ratio=aspect, sound=False)
+            elif "kling" in model:                   # image-to-video / video-edit: follows input; allows real people
                 params = dict(image=url, duration=dur, sound=False)
             else:                                    # gemini omni flash
                 params = dict(image=url, duration=dur, aspect_ratio=aspect, resolution="720p")

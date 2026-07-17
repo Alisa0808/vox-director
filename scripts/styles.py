@@ -102,6 +102,13 @@ STYLE_LIBRARY = {
         "misregistration, tactile cinematic editorial energy — reads like a newspaper feature "
         "spread brought to life, not an ad."
     ),
+    "gilded-deco": (
+        "Vintage luxury editorial paper collage, 1920s art-deco advertisement mood: aged "
+        "cream paper with visible grain, champagne-gold foil paper accents, thin art-deco "
+        "geometric line frames and gilded arches, torn French newspaper clippings, halftone "
+        "print dots, slight print misregistration. Hushed, opulent, museum-vitrine calm — "
+        "reads like a perfume-house press page, not a pop ad."
+    ),
 }
 DEFAULT_STYLE = "american-retro"
 
@@ -136,6 +143,9 @@ THEME_PRESETS = {
     "newsprint-editorial": {"idiom": "newsprint-editorial", "palette": "cream white, deep red, mustard yellow, charcoal black",
         "type_style": "bold condensed newsprint headlines, all-caps", "finish": "aged paper, heavy halftone dots, high contrast, slight print misregistration",
         "mood": "energetic, tactile, cinematic editorial", "motion_style": "punchy"},
+    "gilded-deco": {"idiom": "gilded-deco", "palette": "aged cream, champagne gold, charcoal black, muted deep gold",
+        "type_style": "elegant high-contrast didone serif, wide letter-spacing", "finish": "gold foil, aged paper grain, fine halftone, slight misregistration",
+        "mood": "luxurious, calm, vintage editorial", "motion_style": "calm"},
 }
 
 

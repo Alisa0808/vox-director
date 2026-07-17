@@ -4,11 +4,19 @@ Audio stage: per-beat narration (one consistent voice) + one instrumental BGM.
 
 Narration uses xai/tts-v1 (a real multilingual TTS: named `voice_id` + language),
 so every beat is spoken in the same voice — this sidesteps Omni's clip-to-clip
-voice drift. Seed-Audio was tried and dropped: as a general *sound* model it gave
-wildly inconsistent narration lengths unless a speaker is pinned (see VOICE_MODEL).
+voice drift.
+
+VOICE CLONING: set `voice.clone_ref` to a local audio sample and narration
+switches to bytedance/seed-audio-1.0 with the sample as @audio1. Seed-Audio is a
+general *sound* model — bare narration gives it wildly inconsistent lengths —
+but with a pinned speaker AND the studio-clean directive baked into
+CLONE_TEMPLATE below, timing is stable (validated 2026-07-17: 62 words in
+19.3s, verbatim, one natural 0.5s pause). Per-beat generation keeps beat
+alignment robust either way.
 
 Usage: python3 audio.py <project_dir>   (default: out/tang-30s)
 """
+import base64
 import json
 import os
 import subprocess
@@ -17,10 +25,24 @@ import sys
 from provider import get_provider, run_jobs
 
 # xai/tts-v1 is a clean, predictable multilingual TTS (named voices + language
-# select). Seed-Audio is a general *sound* model that injects pauses/SFX and
-# gave wildly inconsistent narration lengths, so we use a real TTS here.
+# select) — the default. Seed-Audio handles voice cloning (see CLONE_TEMPLATE)
+# and SFX; never hand it bare narration without a pinned speaker.
 VOICE_MODEL = "xai/tts-v1"
+CLONE_MODEL = "bytedance/seed-audio-1.0"
 MUSIC_MODEL = "minimax/music-2.6"
+
+# Every clause is load-bearing: the speaker pin + "clean dry studio vocal only"
+# block is what makes seed-audio's timing beat-alignable (without it the model
+# invents pauses and SFX). `persona` tunes delivery (documentary narrator,
+# luxury voice-over, ...); default suits explainers.
+CLONE_TEMPLATE = (
+    "**Speaker A** @audio1 keeps their own vocal timbre and speaks fluent natural "
+    "{language} with a neutral accent, upbeat pace, crisp articulation, friendly and "
+    "energetic like a {persona}. Clean dry studio vocal only — no background music, "
+    "no sound effects, no room noise or reverb. They say: \"{script}\""
+)
+LANG_NAMES = {"en": "English", "zh": "Mandarin Chinese", "ja": "Japanese",
+              "ko": "Korean", "es": "Spanish", "fr": "French", "de": "German"}
 
 
 def probe_dur(path: str) -> float:
@@ -45,11 +67,25 @@ def run(project_dir: str):
     language = voice.get("language", doc.get("language", "en"))
     speed = float(voice.get("speed", 1.0))
 
+    clone_ref = voice.get("clone_ref")          # local audio sample -> clone this voice
+    persona = voice.get("persona", "YouTube tutorial creator")
+    if clone_ref:
+        with open(clone_ref, "rb") as f:
+            ref_b64 = base64.b64encode(f.read()).decode()
+        lang_name = LANG_NAMES.get(language, language)
+
     specs = {}
     for beat in doc["beats"]:
-        specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
-            VOICE_MODEL, text=t, language=language, voice_id=voice_id,
-            codec="mp3", sample_rate=44100, speed=speed))
+        if clone_ref:
+            specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
+                CLONE_MODEL,
+                text=CLONE_TEMPLATE.format(language=lang_name, persona=persona, script=t),
+                format="mp3", sample_rate=44100,
+                references=[{"audio_data": ref_b64}]))
+        else:
+            specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
+                VOICE_MODEL, text=t, language=language, voice_id=voice_id,
+                codec="mp3", sample_rate=44100, speed=speed))
 
     # BGM: only generate if we don't already have one (it's slow + costs more).
     bgm_path = os.path.join(adir, "bgm.mp3")

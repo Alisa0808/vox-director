@@ -49,3 +49,11 @@ to the topic** — don't just leave the default.
 
 Example: `"voice": {"voice_id": "grace", "language": "en", "speed": 1.0}` → wait, use the id:
 `"voice": {"voice_id": "f8cf5c2c78d4", "language": "en", "speed": 1.0}` (Grace, native English female).
+
+## Voice cloning (seed-audio)
+
+To narrate in a real person's own voice, set `"voice": {"clone_ref": "path/to/sample.mp3",
+"language": "en", "persona": "YouTube tutorial creator"}` — narration switches from xai/tts-v1
+to `bytedance/seed-audio-1.0` with the sample pinned as @audio1 (template in `audio.py`;
+timing validated beat-stable). A clean 20–60s solo-voice sample works best. `persona` tunes
+delivery (e.g. "calm documentary narrator", "luxury brand voice-over").

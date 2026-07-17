@@ -213,6 +213,42 @@ with an edit model to anchor the face). The catch is *animation*: Google (Omni) 
 
 ---
 
+## 4b. C-roll anchor locks (photo → poster, validated 2026-07-17)
+
+C-roll's whole trick is one photographic sticker that never gets redrawn while the paper
+world is generated around it. Three lock templates, each earned by a failed generation
+(`croll_keyframes.py` bakes them in — reproduced here for hand-run prompts):
+
+**FACE LOCK (portrait).** "Her/his face and hair from the attached photo are cut out as a
+PHOTOGRAPHIC sticker with a torn white paper border — keep the facial identity, features and
+the exact expression from the photo pixel-faithful; do not redraw, repaint or stylize the
+face; NO halftone dots, print texture or ink treatment on the face or hair. All poses and
+gestures are expressed by the body only. From the neck down the body is a hand-drawn
+paper-doll illustration jointed like a vintage paper puppet, FULLY CLOTHED in {outfit}."
+- *Poses go to the body only*: asking the model for a wink or a smile redraws the face.
+- *Scope halftone to the background* or the print dots bleed onto skin.
+- *Lock the clothing* or the paper-doll body drifts (one run produced a bare mannequin).
+
+**PRODUCT LOCK.** "{The product} from the attached photo is cut out as a PHOTOGRAPHIC
+sticker with a clean scissor-cut edge and a soft real paper drop shadow — keep its exact
+shape, materials, surface reflections and every word of its label typography pixel-faithful.
+Do not redraw, restyle or repaint the subject or its label. Re-style ONLY the world around
+it as printed paper collage."
+
+**ANCHOR FREEZE (the video stage).** Image-edit keeps label typography intact, but the
+image-to-video stage can quietly re-letter it (observed: "PARFUM" → "PAREUM") or re-time a
+face. Every C-roll motion prompt therefore carries a freeze line — "the photographic
+sticker (and every letter of its label) is a frozen layer, pixel-identical to the still for
+the entire duration" — written into beats.json as `anchor_freeze` and injected by
+`clips.py`. Extract a frame per clip and re-check the letters anyway.
+
+Note the permission split (same spirit as A-roll's face rule): edit models will *carry* a
+real face/product verbatim but Omni refuses to *repaint* one — a halftone-textured face was
+rejected at the video stage regardless of phrasing, and Kling accepts it but drifts the
+identity. Photographic-sticker treatment is the reliable lane.
+
+---
+
 ## 5. Theme presets — combine the dimensions
 
 A **theme preset** = one pick from each image dimension (§1) + a motion preset (§2), on top of
@@ -230,6 +266,7 @@ hand-writing each prompt. The library (`styles.THEME_PRESETS`):
 | `chinese-ink` | Chinese woodblock/ink | ink + vermilion | Chinese brush + red seal | rice-paper, seal | calm/punchy | Chinese history/culture |
 | `atomic-age` | 1950s futurism | teal/orange/cream | atomic script | halftone | punchy | science, space, future |
 | `newsprint-editorial` | mid-century front-page news feature | cream/deep red/mustard/charcoal | bold condensed newsprint headline | aged paper, heavy halftone | punchy | news, AI/tech explainers, editorial features |
+| `gilded-deco` | 1920s art-deco luxury advertisement | aged cream/champagne gold/charcoal | elegant didone serif, wide tracking | gold foil, fine halftone | calm | luxury goods, perfume, watches, heritage brands |
 
 **How to use:** the agent reads the topic → suggests 3–4 fitting presets (or composes a new one
 by mixing the banks in §1–§2) → `style_bakeoff.py` renders one beat in each → the user picks. The

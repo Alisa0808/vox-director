@@ -9,8 +9,11 @@ description: >
   a topic / product / person into a punchy narrated collage video — even if they don't say
   the word "Vox". Also use when reproducing Stav Zilber / rom1trs / Higgsfield-style collage
   ad workflows, or when the user asks for a motion collage or a scrapbook-style tribute.
+  Three input modalities: a topic (B-roll), a talking-head video (A-roll mode), or a single
+  photo of a person/product anchored into the collage (C-roll mode).
   Triggers: "vox video", "collage video", "motion collage", "paper collage
-  explainer", "make a collage ad", "turn this topic into a collage video".
+  explainer", "make a collage ad", "turn this topic into a collage video", "turn my
+  photo/this product shot into a collage video".
 ---
 
 # Vox Director
@@ -110,8 +113,11 @@ This is the default, most-automated path. Every stage is one script, all driven 
    One consistent narrator via **xai/tts-v1** + instrumental BGM via **minimax/music-2.6**.
    **Pick `voice_id` to fit the topic + language** (don't just keep the default) — see
    `references/voices.md` for the full roster (5 multilingual + ~66 native voices by language,
-   with gender). Default `leo` (male, documentary). (Do NOT use seed-audio for plain narration
-   unless you pin a speaker — see gotchas.)
+   with gender). Default `leo` (male, documentary). To narrate in a REAL person's own voice
+   (the presenter of a C-roll photo, a brand voice), set `voice.clone_ref` to a local audio
+   sample — narration switches to seed-audio voice cloning with a pinned-speaker,
+   studio-clean template that keeps timing beat-stable (see gotchas: never hand seed-audio
+   bare narration without that pin).
 
 6. **Assemble.** `python3 scripts/assemble.py out/<project>`
    ffmpeg: normalize + concat all shots, lay the single narration ducked under the music,
@@ -173,6 +179,40 @@ scratch.
    audio the video model produced) so lip-sync is guaranteed regardless of which model
    handled that beat, normalizes every beat to one canvas, and concats into `final.mp4`.
 
+## C-roll mode (one photo → collage)
+
+The third input modality — "cutout roll". A-roll re-styles a talking-head VIDEO; B-roll
+generates everything from a topic; **C-roll takes a single still PHOTO** (a selfie, an
+avatar card, a product shot) and anchors it inside the collage world: the subject is cut
+out as a PHOTOGRAPHIC sticker — never redrawn — and per-beat posters are generated around
+it with an image-EDIT model, then animated through the normal clip stage. Use C-roll when
+the user gives you one photo and a topic: a personal explainer fronted by their own face,
+or a collage ad built around a real product shot (validated on both, 2026-07-17).
+
+1. **Beat map.** Same as B-roll (`references/beat-layer.md`, same approval gate), plus the
+   C-roll fields in beats.json: `"mode": "croll"`, `"anchor_photo"`, `"croll_subject"`
+   (`portrait` | `product`), and `subject_wardrobe` (portrait — lock the outfit or the
+   paper-doll body drifts) or `subject_desc` (product). Set `"title": false` on shots —
+   C-roll posters carry no headline; text belongs to captions. If there is no separate
+   script, transcribe/derive narration first and let the audio's ASR timestamps define the
+   beats (audio-first, like A-roll — not text-first like B-roll).
+
+2. **Anchored keyframes.** `python3 scripts/croll_keyframes.py <project_dir>`
+   Uploads the photo once and generates one anchored poster per shot via
+   `google/nano-banana-2/edit` (fallback `openai/gpt-image-2/edit`). Portraits get a
+   photographic face + illustrated paper-doll body; products get a pixel-faithful sticker
+   with label typography intact. Prompt rules that are baked in (all three cost a re-run to
+   learn): poses/expressions go to the BODY only — asking for a wink redraws the face;
+   halftone must be scoped to the background or it bleeds onto skin; portrait clothing must
+   be locked explicitly. The script also writes `anchor_freeze` into beats.json.
+
+3. **Animate + audio + assemble.** Standard `clips.py` → `audio.py` → `assemble.py`.
+   `clips.py` injects the `anchor_freeze` guard into every motion prompt — without it the
+   video stage can re-letter a product label (observed: "PARFUM" → "PAREUM") or re-time a
+   face. For narration in the subject's own voice, set `voice.clone_ref` (see Voice + music
+   above); derive stamp/snap-zoom timing from the narration's ASR word timestamps
+   (`asr_beats.py` works on any audio, not just A-roll footage).
+
 ## beats.json schema
 
 ```json
@@ -190,10 +230,18 @@ scratch.
   "motion_style": "punchy",               // amplitude: calm | punchy | max (theme sets a default)
   "constraints": "strict",                // strict = defect guards on | loose = let AI explore + re-roll
   "voice": {"voice_id": "leo", "language": "en", "speed": 1.0},  // pick per topic/language — see references/voices.md
+                                          // + optional "clone_ref": "path/to/sample.mp3" (clone that voice via seed-audio)
+                                          //   and "persona": "YouTube tutorial creator" (delivery style for cloned VO)
   "music": "epic cinematic orchestral, instrumental, no vocals",
   "mix": {"music": 0.6, "voice": 1.25},   // audio balance — optional; these are the defaults (BGM ducks under the VO)
   "caption_style": "white",               // white (default: clean white subtitle) | paper (cream cut-out collage look)
+  "captions": true,                       // false = no burned-in captions (deliver clean, subtitle in post)
   "watermark": "Made with Atlas Cloud",
+  "mode": "croll",                        // C-roll only — plus the four fields below
+  "anchor_photo": "path/to/photo.png",    // C-roll: the still to anchor (person or product)
+  "croll_subject": "portrait",            // C-roll: portrait | product
+  "subject_wardrobe": "a cream knitted sweater and charcoal trousers",  // C-roll portrait: outfit lock
+  "subject_desc": "the perfume bottle",   // C-roll product: short noun phrase for the sticker
   "beats": [
     {
       "id": 1, "title_cn": "", "title_en": "BEFORE MONEY",

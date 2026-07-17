@@ -103,38 +103,41 @@ def run(project_dir):
     ff(["-f", "concat", "-safe", "0", "-i", listf, "-c", "copy", body])
 
     # ---- 3) captions (per beat) + watermark PNGs ----
+    captions_on = bool(doc.get("captions", True))  # "captions": false -> no burned-in captions
     cap_pngs = []
-    for bs in beat_spans:
-        beat = bs["beat"]
-        p = os.path.join(tmp, f"cap_{beat['id']}.png")
-        acc = None
-        if cap_style == "paper":                  # only the paper style uses a per-beat keyline
-            kf = next((s["keyframe_path"] for s in (beat.get("shots") or [beat])
-                       if s.get("keyframe_path") and os.path.exists(s["keyframe_path"])), None)
-            acc = text_overlay.accent_color(kf) if kf else None
-        text_overlay.render_caption(beat["narration"], p, W, H, accent=acc, style=cap_style)
-        cap_pngs.append(p)
+    if captions_on:
+        for bs in beat_spans:
+            beat = bs["beat"]
+            p = os.path.join(tmp, f"cap_{beat['id']}.png")
+            acc = None
+            if cap_style == "paper":              # only the paper style uses a per-beat keyline
+                kf = next((s["keyframe_path"] for s in (beat.get("shots") or [beat])
+                           if s.get("keyframe_path") and os.path.exists(s["keyframe_path"])), None)
+                acc = text_overlay.accent_color(kf) if kf else None
+            text_overlay.render_caption(beat["narration"], p, W, H, accent=acc, style=cap_style)
+            cap_pngs.append(p)
     wm_png = text_overlay.render_watermark(wm_text, os.path.join(tmp, "wm.png"), W, H)
 
     # ---- 4) one pass: overlay captions+wm, mix per-beat narration, duck BGM ----
     nb = len(beat_spans)
+    ncap = len(cap_pngs)                        # 0 when captions are off
     inputs = ["-i", body]                       # 0
     for p in cap_pngs:
-        inputs += ["-i", p]                     # 1..nb
-    inputs += ["-i", wm_png]                    # nb+1
-    narr_base = nb + 2
+        inputs += ["-i", p]                     # 1..ncap
+    inputs += ["-i", wm_png]                    # ncap+1
+    narr_base = ncap + 2
     for bs in beat_spans:
         inputs += ["-i", bs["beat"]["narration_audio"]]   # narr inputs
     bgm_idx = narr_base + nb
     inputs += ["-i", doc["bgm_path"]]
 
     chain, prev = [], "[0:v]"
-    for i, bs in enumerate(beat_spans):
+    for i, bs in enumerate(beat_spans[:ncap]):
         s, e = bs["start"] + 0.2, bs["start"] + bs["dur"] - 0.1
         lbl = f"[v{i+1}]"
         chain.append(f"{prev}[{i+1}:v]overlay=0:0:enable='between(t,{s:.2f},{e:.2f})'{lbl}")
         prev = lbl
-    chain.append(f"{prev}[{nb+1}:v]overlay=0:0[v]")
+    chain.append(f"{prev}[{ncap+1}:v]overlay=0:0[v]")
 
     # per-beat narration delayed to its start, then mixed
     nlabels = []

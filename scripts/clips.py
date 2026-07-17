@@ -56,10 +56,13 @@ DEFAULT_ELEMENT = ("several cut-out elements move naturally with the scene — t
 
 
 def collage_prompt(camera, element_motion=None, feel=None, palette=None, amplitude="punchy",
-                   has_title=True, constraints="strict"):
+                   has_title=True, constraints="strict", anchor_freeze=None):
     """Collage motion prompt. `constraints`: 'strict' = defect guards on (flat-2D, one-way,
     no-morph) for text-heavy explainers; 'loose' = let the model explore (3D/bold moves), keep
-    only the essentials. Text is hard-protected ONLY when the shot has a headline (has_title)."""
+    only the essentials. Text is hard-protected ONLY when the shot has a headline (has_title).
+    `anchor_freeze`: C-roll only — a FREEZE sentence protecting the photographic anchor
+    sticker (face or product+label); croll_keyframes.py writes it into beats.json. Without it
+    the video stage may re-letter a label or re-time a face (both observed in validation)."""
     cam = CAMERA_VOCAB.get(camera, camera)
     element = element_motion or DEFAULT_ELEMENT
     feel = feel or "tactile, editorial, a page from a scrapbook"
@@ -67,6 +70,8 @@ def collage_prompt(camera, element_motion=None, feel=None, palette=None, amplitu
     amp = AMPLITUDE.get(amplitude, AMPLITUDE["punchy"])
     text_lock = ("Keep the HEADLINE TEXT sharp, legible and stable — do not warp or wobble the "
                  "lettering. " if has_title else "")
+    if anchor_freeze:
+        text_lock = f"{anchor_freeze} " + text_lock
     if constraints == "loose":
         guard = (text_lock + "Keep the paper-collage look (printed cut-outs, not photoreal); "
                  "avoid a subject melting into shapeless goo. Otherwise explore freely.")
@@ -146,6 +151,7 @@ def run(project_dir, only=None):
             if style == "collage":
                 prompt = collage_prompt(camera, element_motion=element, feel=beat.get("feel"),
                                         palette=beat.get("bg"), amplitude=motion_style,
+                                        anchor_freeze=doc.get("anchor_freeze"),
                                         has_title=shot.get("title", True), constraints=constraints)
             else:
                 prompt = painterly_prompt(shot.get("motion", camera))

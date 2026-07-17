@@ -30,13 +30,18 @@ Feeding a recognizable **real celebrity + brand logos** into a video model:
 - The **local keyframe engine never hits this** (no video model in the loop) — the other way
   through for real-person content.
 
-### Voice: why not seed-audio for plain narration
+### Voice: seed-audio needs a pinned speaker (then it's beat-stable)
 `bytedance/seed-audio-1.0` is a general *audio-scene* model, not a plain TTS. Given bare
 narration with no pinned voice it adds pauses/SFX and produced wildly inconsistent lengths
-(same 3 lines: 22s / 14s / 12s vs xai-tts's clean 8.6 / 10.2 / 9.0s). It *can* do clean VO if
-you pin a `speaker` and strip em-dashes (the playbook used it for a Chinese male VO). Default
-to `xai/tts-v1` for narration; reach for seed-audio for Chinese-specific voices, voice
-cloning (`references`), or SFX like transition whooshes.
+(same 3 lines: 22s / 14s / 12s vs xai-tts's clean 8.6 / 10.2 / 9.0s). **But pinned, it is
+beat-alignable** — validated 2026-07-17 with the voice-clone template in `audio.py`
+(pinned **Speaker A** @audio1 + "clean dry studio vocal only — no background music, no
+sound effects, no room noise or reverb"): 62 words rendered in 19.3s, verbatim, one natural
+0.5s pause. The earlier "rhythm doesn't match the beats" failures were the bare-narration
+usage, not the model. Default to `xai/tts-v1` for narration; reach for seed-audio for
+voice cloning (`voice.clone_ref` → `references` payload), Chinese-specific voices, or SFX
+like transition whooshes — and always derive final timing from the ACTUAL audio (ASR word
+timestamps), never from the script.
 
 ## API gotchas (Atlas, behind a proxy)
 

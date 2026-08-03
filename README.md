@@ -141,4 +141,8 @@ Built end to end on **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github
 
 ## License
 
-[MIT](LICENSE) © 2026 Atlas Cloud
+[MIT](LICENSE) © 2026
+
+## Friends
+
+**[LINUX DO](https://linux.do)** — an open, friendly community where developers share and learn together.

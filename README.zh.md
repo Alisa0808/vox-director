@@ -141,4 +141,8 @@ assets/               样片
 
 ## 许可
 
-[MIT](LICENSE) © 2026 Atlas Cloud
+[MIT](LICENSE) © 2026
+
+## 友情链接
+
+**[LINUX DO](https://linux.do)** —— 一个开放、友善的开发者社区,大家在这里分享与学习。

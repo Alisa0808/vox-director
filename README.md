@@ -141,7 +141,7 @@ Built end to end on **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github
 
 ## License
 
-[MIT](LICENSE) © 2026
+[MIT](LICENSE) © 2026 Alisa Qian
 
 ## Friends
 

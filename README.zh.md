@@ -141,7 +141,7 @@ assets/               样片
 
 ## 许可
 
-[MIT](LICENSE) © 2026
+[MIT](LICENSE) © 2026 Alisa Qian
 
 ## 友情链接
 

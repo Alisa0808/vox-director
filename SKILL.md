@@ -284,8 +284,10 @@ API / ffmpeg gotcha (auth header, curl downloads, no-libass captions, content bl
 Read it before debugging any failure — most failures are already documented there.
 
 **Backends are pluggable.** Every API call goes through a **provider** (`scripts/provider.py`);
-Atlas Cloud is the default and only backend today. Set `"provider"` in beats.json to route to a
-different backend once one is added — the stage scripts don't change. `scripts/provider.py`'s
+Atlas Cloud is the default, and a Novita backend (`NOVITA_API_KEY`) is also available — set
+`"provider": "novita"` in beats.json to route to it, no stage script changes needed. Note: on
+Novita, `submit_video` is image-driven motion only (no prompt) and `submit_audio` covers
+narration only, not music — see `scripts/novita_cloud.py`. `scripts/provider.py`'s
 `run_jobs()` also does the submit/poll with **auto-resubmit on a stalled or failed job**.
 
 ## Advanced: element-level motion collage

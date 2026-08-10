@@ -228,8 +228,8 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 
 **后端可插拔。** 所有 API 调用都走一个 **provider**(`scripts/provider.py`);Atlas Cloud 是默认后端,
 现在还有一个 Novita 后端(`NOVITA_API_KEY`)。在 beats.json 里设 `"provider": "novita"` 即可切换——各
-阶段脚本不用改。注意:Novita 上的 `submit_video` 只支持图生视频的运动(无 prompt),`submit_audio` 只
-支持配音,不支持配乐——见 `scripts/novita_cloud.py`。
+阶段脚本不用改。注意:Novita 上的 `submit_video` 只支持图生视频的运动(无 prompt),`submit_image` 只
+接得到经典 checkpoint 目录,接不到 Nano Banana 这类旗舰模型——见 `scripts/novita_cloud.py`。
 `provider.py` 的 `run_jobs()` 还做了提交/轮询,并在任务**卡死或失败时自动重提**。
 
 ## 高阶:元素级 motion collage

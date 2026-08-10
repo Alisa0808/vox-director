@@ -83,8 +83,9 @@ class AtlasCloudProvider(Provider):
 
 class NovitaProvider(Provider):
     """Wraps the novita_cloud client. submit_video is image-driven motion only
-    (no prompt) and submit_audio covers narration only -- see novita_cloud's
-    module docstring for why those two are scoped down rather than guessed at."""
+    (no prompt); submit_image only reaches the classic checkpoint catalog, not
+    flagship models like Nano Banana -- see novita_cloud's module docstring
+    for why those are scoped down rather than guessed at."""
     name = "novita"
 
     def submit_image(self, model, prompt, **params):

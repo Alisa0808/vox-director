@@ -162,11 +162,16 @@ def submit_audio(model: str, **params) -> str:
 
     Music (prompt=..., is_instrumental=...): MiniMax Music on Novita
     (/minimax-music) is SYNCHRONOUS -- it returns the audio URL directly, no
-    task_id -- so its result is wrapped behind a synthetic sync job id, same
-    pattern as remove_bg() below. `model` must be one of the three MiniMax
-    Music model names Novita documents (music-2.5+/2.5/2.0); anything else
-    (e.g. an Atlas Cloud-style id like "minimax/music-2.6") falls back to
-    "music-2.5+", the tier that supports is_instrumental."""
+    task_id, and there is no async variant to poll instead -- so its result is
+    wrapped behind a synthetic sync job id, same pattern as remove_bg() below.
+    A full-song render routinely runs past the client's default 60s socket
+    timeout (Novita's own error-handling guide says to keep client/proxy
+    timeouts above 60s for exactly this reason), so this call alone gets a
+    longer, explicit timeout rather than the module default. `model` must be
+    one of the three MiniMax Music model names Novita documents
+    (music-2.5+/2.5/2.0); anything else (e.g. an Atlas Cloud-style id like
+    "minimax/music-2.6") falls back to "music-2.5+", the tier that supports
+    is_instrumental."""
     text = params.pop("text", None)
     if text is not None:
         voice_id = params.pop("voice_id", None)
@@ -200,7 +205,7 @@ def submit_audio(model: str, **params) -> str:
             "prompt": prompt, "is_instrumental": is_instrumental, **params}
     if fmt:
         body["audio_setting"] = {"format": fmt}
-    resp = _post("/minimax-music", body)
+    resp = _post("/minimax-music", body, timeout=240)
     audios = resp.get("audios") or []
     if not audios:
         raise NovitaError(f"minimax-music returned no audio: {json.dumps(resp)[:300]}")

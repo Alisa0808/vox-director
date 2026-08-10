@@ -149,7 +149,10 @@ def submit_audio(model: str, **params) -> str:
     Narration (text=...): async /async/txt2speech -> real task_id. `model` is
     unused here -- Novita's generic txt2speech endpoint is a single engine
     selected by `voice_id`, not a model catalog, so the voice comes from
-    **params.
+    **params. The engine behind it is MiniMax's, so `voice_id` must be one of
+    MiniMax's documented System Voices (e.g. "Deep_Voice_Man", "Wise_Woman")
+    -- confirmed live: an Atlas Cloud-style id like "leo" 400s with
+    `voice_id: leo not supports`.
 
     Music (prompt=..., is_instrumental=...): MiniMax Music on Novita
     (/minimax-music) is SYNCHRONOUS -- it returns the audio URL directly, no

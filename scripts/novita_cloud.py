@@ -3,8 +3,8 @@
 Novita AI API client for vox-director.
 
 Thin, dependency-free wrapper around Novita's `/v3` API: the async task_id ->
-poll pattern shared by txt2img/img2video/txt2speech, plus the synchronous
-remove-background call.
+poll pattern shared by txt2img/img2video/minimax-speech-2.8-hd, plus the
+synchronous remove-background call.
 
 One gap, left honest rather than guessed at:
   - submit_video talks to the generic /async/img2video model family (image-in,
@@ -146,13 +146,19 @@ _SYNC_RESULTS = {}
 def submit_audio(model: str, **params) -> str:
     """Submit a narration (text-to-speech) or music task; return a job id.
 
-    Narration (text=...): async /async/txt2speech -> real task_id. `model` is
-    unused here -- Novita's generic txt2speech endpoint is a single engine
-    selected by `voice_id`, not a model catalog, so the voice comes from
-    **params. The engine behind it is MiniMax's, so `voice_id` must be one of
-    MiniMax's documented System Voices (e.g. "Deep_Voice_Man", "Wise_Woman")
-    -- confirmed live: an Atlas Cloud-style id like "leo" 400s with
-    `voice_id: leo not supports`.
+    Narration (text=...): there is no generic /async/txt2speech route on
+    Novita -- that path was a guess, and it 404s/400s in practice (confirmed
+    live, twice, with two different voice_id values, neither of which is
+    valid for that nonexistent endpoint). The real, documented async TTS
+    route is MiniMax's own model endpoint, `/async/minimax-speech-2.8-hd`
+    (https://novita.ai/docs/api-reference/model-apis-minimax-speech-2.8-hd-async):
+    top-level `text` + a required `voice_setting: {voice_id: ...}` object (NOT
+    a flat `voice_id` field, and NOT wrapped in a `request` envelope like
+    txt2img). `model` is unused here, same as before -- this is the one TTS
+    engine wired up. `voice_id` must be one of MiniMax's documented System
+    Voices (e.g. "Deep_Voice_Man", "Wise_Woman") or a cloned/designed voice
+    id from that same catalog -- an Atlas Cloud-style id like "leo" is not
+    in it.
 
     Music (prompt=..., is_instrumental=...): MiniMax Music on Novita
     (/minimax-music) is SYNCHRONOUS -- it returns the audio URL directly, no
@@ -163,8 +169,26 @@ def submit_audio(model: str, **params) -> str:
     "music-2.5+", the tier that supports is_instrumental."""
     text = params.pop("text", None)
     if text is not None:
-        body = {"request": {"texts": [text], **params}}
-        return _post("/async/txt2speech", body)["task_id"]
+        voice_id = params.pop("voice_id", None)
+        if not voice_id:
+            raise NovitaError("submit_audio: narration requires voice_id=... "
+                               "(a MiniMax System Voice, e.g. 'Deep_Voice_Man')")
+        voice_setting = {"voice_id": voice_id}
+        speed = params.pop("speed", None)
+        if speed is not None:
+            voice_setting["speed"] = speed
+        params.pop("language", None)  # no confirmed language_boost enum yet; drop rather than guess
+        fmt = params.pop("codec", None) or params.pop("format", None)
+        sample_rate = params.pop("sample_rate", None)
+        audio_setting = {}
+        if fmt:
+            audio_setting["format"] = fmt
+        if sample_rate:
+            audio_setting["audio_sample_rate"] = sample_rate
+        body = {"text": text, "voice_setting": voice_setting, **params}
+        if audio_setting:
+            body["audio_setting"] = audio_setting
+        return _post("/async/minimax-speech-2.8-hd", body)["task_id"]
 
     prompt = params.pop("prompt", None)
     is_instrumental = params.pop("is_instrumental", False)

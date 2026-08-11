@@ -2,10 +2,11 @@
 """
 Provider abstraction — the pluggable media backend the pipeline stages talk to.
 
-Atlas Cloud is the default and, for now, the only backend. Stages call a Provider
+Atlas Cloud is the default backend; Novita is a second one. Stages call a Provider
 (submit_image/video/audio, remove_bg, get_status, upload, download) instead of a
 concrete client, so adding a backend is: subclass Provider + one registry entry.
-Pick a backend per project with beats.json `{"provider": "atlas_cloud"}` (default).
+Pick a backend per project with beats.json `{"provider": "atlas_cloud"}` (default,
+or `"novita"`).
 
 The layer is a thin in-process wrapper — zero extra network hops, so it does NOT
 slow the pipeline; the only cost is the API latency, which is unchanged.
@@ -14,6 +15,7 @@ import time
 from abc import ABC, abstractmethod
 
 import atlas_cloud
+import novita_cloud
 
 
 class ProviderError(RuntimeError):
@@ -79,7 +81,36 @@ class AtlasCloudProvider(Provider):
         return atlas_cloud.download(url, dest)
 
 
-_REGISTRY = {"atlas_cloud": AtlasCloudProvider}
+class NovitaProvider(Provider):
+    """Wraps the novita_cloud client. submit_video is image-driven motion only
+    (no prompt); submit_image only reaches the classic checkpoint catalog, not
+    flagship models like Nano Banana -- see novita_cloud's module docstring
+    for why those are scoped down rather than guessed at."""
+    name = "novita"
+
+    def submit_image(self, model, prompt, **params):
+        return novita_cloud.submit_image(model, prompt, **params)
+
+    def submit_video(self, model, prompt, **params):
+        return novita_cloud.submit_video(model, prompt, **params)
+
+    def submit_audio(self, model, **params):
+        return novita_cloud.submit_audio(model, **params)
+
+    def remove_bg(self, model, image_url, **params):
+        return novita_cloud.remove_bg(image_url, **params)
+
+    def get_status(self, job_id):
+        return novita_cloud.get_status(job_id)
+
+    def upload(self, path):
+        return novita_cloud.upload(path)
+
+    def download(self, url, dest):
+        return novita_cloud.download(url, dest)
+
+
+_REGISTRY = {"atlas_cloud": AtlasCloudProvider, "novita": NovitaProvider}
 
 
 def get_provider(name=None):

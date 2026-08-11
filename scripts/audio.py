@@ -31,6 +31,13 @@ VOICE_MODEL = "xai/tts-v1"
 CLONE_MODEL = "bytedance/seed-audio-1.0"
 MUSIC_MODEL = "minimax/music-2.6"
 
+# Atlas Cloud's xai/tts-v1 and Novita's txt2speech are different engines with
+# unrelated voice catalogs -- "leo" (Atlas default, see references/voices.md)
+# 400s on Novita ("voice_id: leo not supports"). Novita's engine is MiniMax's,
+# so its default must come from MiniMax's documented System Voices list;
+# Deep_Voice_Man is the closest match to "male documentary-ish".
+DEFAULT_VOICE_ID = {"atlas_cloud": "leo", "novita": "Deep_Voice_Man"}
+
 # Every clause is load-bearing: the speaker pin + "clean dry studio vocal only"
 # block is what makes seed-audio's timing beat-alignable (without it the model
 # invents pauses and SFX). `persona` tunes delivery (documentary narrator,
@@ -63,7 +70,7 @@ def run(project_dir: str):
 
     prov = get_provider(doc.get("provider"))
     voice = doc.get("voice", {})
-    voice_id = voice.get("voice_id", "leo")     # named male documentary-ish voice
+    voice_id = voice.get("voice_id") or DEFAULT_VOICE_ID.get(prov.name, "leo")
     language = voice.get("language", doc.get("language", "en"))
     speed = float(voice.get("speed", 1.0))
 

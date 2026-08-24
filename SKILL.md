@@ -168,9 +168,9 @@ scratch.
    **photographic paper-cutout sticker** treatment on the presenter — her real likeness,
    lip movement, eye-line and gestures follow the source frame-for-frame; only the
    silhouette edge and the world around her are paper-collage. Default model is
-   `google/gemini-omni-flash/video-edit`; any beat it rejects automatically retries on
-   `bytedance/seedance-2.0/reference-to-video` (set via `video_model`/`video_model_fallback`
-   in beats.json). **Never ask the model to redraw or halftone-texture the face itself** —
+   `google/gemini-omni-flash/video-edit`. A failed beat is reported without automatic
+   resubmission; choose another `video_model` and rerun that beat explicitly if needed.
+   **Never ask the model to redraw or halftone-texture the face itself** —
    that gets rejected regardless of how the prompt is worded (tried both a strong and a
    softened phrasing; both failed). Uses the same aspect-routing confirm gate as `clips.py`.
 
@@ -286,7 +286,8 @@ Read it before debugging any failure — most failures are already documented th
 **Backends are pluggable.** Every API call goes through a **provider** (`scripts/provider.py`);
 Atlas Cloud is the default and only backend today. Set `"provider"` in beats.json to route to a
 different backend once one is added — the stage scripts don't change. `scripts/provider.py`'s
-`run_jobs()` also does the submit/poll with **auto-resubmit on a stalled or failed job**.
+`run_jobs()` submits each task once and polls it. A stalled or failed prediction is reported
+with its job id and is **never automatically resubmitted**, avoiding duplicate billable tasks.
 
 ## Advanced: element-level motion collage
 

@@ -142,7 +142,6 @@ def run(project_dir, source, language=None, keyterm=None, max_beat_dur=MAX_BEAT_
         "style": "collage",
         "theme": None,                                    # fill in after a style bake-off
         "video_model": "google/gemini-omni-flash/video-edit",
-        "video_model_fallback": "bytedance/seedance-2.0/reference-to-video",
         "transcript": result.get("text", ""),
         "beats": beats,
     }

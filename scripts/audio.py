@@ -96,7 +96,7 @@ def run(project_dir: str):
     else:
         print(f"[bgm] reuse existing {bgm_path}")
 
-    done = run_jobs(prov, specs, poll_s=4, stall_s=150, max_retries=2, deadline_s=600)
+    done = run_jobs(prov, specs, poll_s=4, stall_s=150, deadline_s=600)
 
     # download + record
     for beat in doc["beats"]:

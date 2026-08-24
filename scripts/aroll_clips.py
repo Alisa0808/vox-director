@@ -7,18 +7,12 @@ frame. Unlike B-roll there is no synthesized poster to animate: the "keyframe"
 IS the presenter's real footage, so this talks to video-edit / reference-to-
 video models instead of image-to-video.
 
-Model routing (validated 2026-07-16 against a real production clip):
-  1. google/gemini-omni-flash/video-edit (default). Accepts real people and a
-     PHOTOGRAPHIC paper-cutout sticker treatment on the presenter (proven).
-     Rejects (1010002) a prompt that asks it to redraw/halftone-texture the
-     face itself -- tried both a strong and a softened phrasing, both
-     rejected, so build_prompt() below never asks for that.
-  2. bytedance/seedance-2.0/reference-to-video (fallback) for any beat Omni
-     rejects.
-Kling O3 pro's video-edit/reference-to-video were also validated as a further
-fallback (they don't policy-block this content) but default to a flat vector-
-illustration look rather than photographic, so they're not the auto-fallback
-here -- wire them in via video_model_fallback if you've confirmed the look.
+The default model, google/gemini-omni-flash/video-edit, accepts real people and
+a PHOTOGRAPHIC paper-cutout sticker treatment on the presenter (validated
+2026-07-16). It rejects (1010002) prompts that ask it to redraw or halftone-
+texture the face itself, so build_prompt() below never asks for that. Failed
+predictions are reported without automatically creating a second billable task;
+choose another video_model and rerun the failed beat explicitly if needed.
 
 Usage: python3 aroll_clips.py <project_dir>
 """
@@ -31,7 +25,6 @@ from provider import get_provider, run_jobs
 from styles import resolve_theme, resolve_video_aspect
 
 PRIMARY_MODEL = "google/gemini-omni-flash/video-edit"
-FALLBACK_MODEL = "bytedance/seedance-2.0/reference-to-video"
 
 
 def cut_segment(src, start, end, dest, pad=0.15):
@@ -104,7 +97,6 @@ def run(project_dir, only=None):
     aspect = doc.get("aspect", "9:16")
     theme = resolve_theme(doc.get("theme")) or {}
     primary = doc.get("video_model", PRIMARY_MODEL)
-    fallback = doc.get("video_model_fallback", FALLBACK_MODEL)
     seg_dir = os.path.join(project_dir, "segments")
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(seg_dir, exist_ok=True)
@@ -140,31 +132,13 @@ def run(project_dir, only=None):
         meta[key] = {"beat": beat, "seg_path": seg_path, "url": url}
         print(f"[{key}] queued on {primary.split('/')[-2]} ({beat['dur']}s)")
 
-    done = run_jobs(prov, specs, poll_s=8, stall_s=240, max_retries=1, deadline_s=900)
-
-    # ---- fallback pass: only the beats the primary model rejected/failed ----
-    retry_keys = [k for k, u in done.items() if not u]
-    if retry_keys:
-        a_fallback = gate_aspect(fallback)
-        if a_fallback is None:
-            print(f"skipping fallback for beats {retry_keys}: aspect gate blocked above")
-        else:
-            print(f"[{fallback.split('/')[-2]}] retrying beats {retry_keys}")
-            fb_specs = {}
-            for key in retry_keys:
-                m = meta[key]
-                prompt = build_prompt(theme, m["beat"].get("content_beats", ""))
-                params = video_params(fallback, m["url"], a_fallback, m["beat"]["dur"])
-                fb_specs[key] = (lambda mo=fallback, p=prompt, pr=params:
-                                 prov.submit_video(mo, p, **pr))
-            fb_done = run_jobs(prov, fb_specs, poll_s=8, stall_s=240, max_retries=1, deadline_s=900)
-            done.update({k: v for k, v in fb_done.items() if v})
+    done = run_jobs(prov, specs, poll_s=8, stall_s=240, deadline_s=900)
 
     for key, url in done.items():
         beat = meta[key]["beat"]
         if not url:
-            print(f"[{key}] FAILED on both primary and fallback -- beat will be missing "
-                  f"from the assembled film")
+            print(f"[{key}] FAILED on {primary}; no replacement task was submitted. "
+                  f"Set another video_model and rerun beat {key} explicitly if needed.")
             continue
         dest = os.path.join(clip_dir, f"clip_{key}.mp4")
         prov.download(url, dest)

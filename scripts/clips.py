@@ -169,7 +169,7 @@ def run(project_dir, only=None):
             by_key[key] = shot
             print(f"[{key}] queued ({dur}s, {model.split('/')[1]})")
 
-    done = run_jobs(prov, specs, poll_s=5, stall_s=240, max_retries=2, deadline_s=1200)
+    done = run_jobs(prov, specs, poll_s=5, stall_s=240, deadline_s=1200)
 
     for key, url in done.items():
         if not url:

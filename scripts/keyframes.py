@@ -67,7 +67,7 @@ def run(project_dir):
                                                              **image_params(img_model, aspect, img_res)))
             by_key[key] = shot
 
-    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=300)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, deadline_s=300)
 
     for key, url in done.items():
         if not url:

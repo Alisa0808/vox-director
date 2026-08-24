@@ -57,7 +57,7 @@ https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 
 上面这条是 **B-roll**——一个选题进去,画面全靠生成。另外两种输入形态复用同一套引擎:
 
-- **A-roll——你已经有一段口播视频。** 它会被 ASR 自动切成段,再整段套上拼贴风格,真人的脸、口型、手势逐帧保留(`gemini-omni-flash/video-edit`,失败自动重试 `seedance-2.0/reference-to-video`)。
+- **A-roll——你已经有一段口播视频。** 它会被 ASR 自动切成段,再整段套上拼贴风格,真人的脸、口型、手势逐帧保留(`gemini-omni-flash/video-edit`;失败任务会交给用户确认,不会自动重新提交)。
 - **C-roll——你只有一张静态照片**(自拍、产品图)。主体被抠成摄影质感的贴纸——绝不重绘——每一段的海报围着它生成(`nano-banana-2/edit`)。旁白还能克隆成主体本人的声音。
 
 两个关键理念决定成败,技能就是围绕它们搭的:

@@ -90,17 +90,16 @@ def get_provider(name=None):
     return _REGISTRY[name]()
 
 
-def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=2, deadline_s=900):
-    """Submit + poll a batch of jobs, resubmitting any that FAIL or STALL.
+def run_jobs(prov, specs, *, poll_s=3, stall_s=90, deadline_s=900):
+    """Submit each job once, then poll without creating replacement tasks.
 
-    specs: dict of key -> submit() callable returning a job id. A job that fails,
-    or stays pending past `stall_s`, is resubmitted (fresh id) up to `max_retries`
-    times — this is what stops one stuck prediction from wasting the whole deadline.
-    Returns key -> output URL (or None). Prints progress like the old loops did.
+    specs: dict of key -> submit() callable returning a job id. Failed, stalled,
+    or timed-out jobs return None together with their prediction id so callers can
+    inspect them and decide whether a new billable submission is appropriate.
     """
     st = {}
     for key, submit in specs.items():
-        st[key] = {"pid": submit(), "t": time.time(), "tries": 0}
+        st[key] = {"pid": submit(), "t": time.time()}
         print(f"[{key}] submitted {st[key]['pid']}")
 
     done = {}
@@ -108,7 +107,7 @@ def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=2, deadline_s=900
     while len(done) < len(specs) and time.time() < deadline:
         time.sleep(poll_s)
         now = time.time()
-        for key, submit in specs.items():
+        for key in specs:
             if key in done:
                 continue
             s = st[key]
@@ -117,17 +116,14 @@ def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=2, deadline_s=900
             if status == "completed":
                 done[key] = r["output"]
                 print(f"[{key}] done")
-            elif status == "failed" or (status == "pending" and now - s["t"] > stall_s):
-                if s["tries"] < max_retries:
-                    s["tries"] += 1
-                    s["pid"] = submit()
-                    s["t"] = time.time()
-                    why = "failed" if status == "failed" else f"stalled>{int(stall_s)}s"
-                    print(f"[{key}] {why} -> resubmit #{s['tries']} ({s['pid']})")
-                elif status == "failed":
-                    done[key] = None
-                    print(f"[{key}] FAILED: {(r.get('error') or '')[:120]}")
-                # stalled + out of retries: keep waiting until the deadline
+            elif status == "failed":
+                done[key] = None
+                print(f"[{key}] FAILED ({s['pid']}): {(r.get('error') or '')[:120]}")
+            elif status == "pending" and now - s["t"] > stall_s:
+                done[key] = None
+                print(f"[{key}] STALLED>{int(stall_s)}s ({s['pid']}): not resubmitted")
     for key in specs:
-        done.setdefault(key, None)
+        if key not in done:
+            done[key] = None
+            print(f"[{key}] TIMED OUT ({st[key]['pid']}): not resubmitted")
     return done

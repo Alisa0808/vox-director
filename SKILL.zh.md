@@ -122,9 +122,9 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 2. **生成。** `python3 scripts/aroll_clips.py <project_dir> [only_ids]`
    从源视频切出每段的时间范围、上传,再套上**摄影质感的纸片贴纸**处理——主播的真实长相、
    口型、眼神、手势逐帧跟随源视频,只有轮廓边缘和周围世界是拼贴风格。默认模型是
-   `google/gemini-omni-flash/video-edit`;任何一段被它拒绝都会自动重试
-   `bytedance/seedance-2.0/reference-to-video`(可在 beats.json 里用 `video_model`/
-   `video_model_fallback` 改)。**千万别要求模型把脸本身重绘/半调网点化**——不管措辞多软化
+   `google/gemini-omni-flash/video-edit`;失败任务只会上报,不会自动重新提交。需要换模型时,
+   先在 beats.json 里选择另一个 `video_model`,再明确重跑失败的段。**千万别要求模型把脸本身
+   重绘/半调网点化**——不管措辞多软化
    都会被拒(强硬版、软化版都试过,都失败)。画幅路由确认关卡跟 `clips.py` 共用同一套。
 
 3. **合成。** `python3 scripts/aroll_assemble.py <project_dir>`
@@ -228,7 +228,8 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 
 **后端可插拔。** 所有 API 调用都走一个 **provider**(`scripts/provider.py`);Atlas Cloud 是默认、
 目前唯一的后端。在 beats.json 里设 `"provider"` 就能切到别的后端(以后加了才有)——各阶段脚本不用改。
-`provider.py` 的 `run_jobs()` 还做了提交/轮询,并在任务**卡死或失败时自动重提**。
+`provider.py` 的 `run_jobs()` 负责单次提交和轮询;任务卡死或失败时会带 job id 上报,
+**不会自动重提**,避免重复创建计费任务。
 
 ## 高阶:元素级 motion collage
 

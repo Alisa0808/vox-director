@@ -284,9 +284,13 @@ API / ffmpeg gotcha (auth header, curl downloads, no-libass captions, content bl
 Read it before debugging any failure — most failures are already documented there.
 
 **Backends are pluggable.** Every API call goes through a **provider** (`scripts/provider.py`);
-Atlas Cloud is the default and only backend today. Set `"provider"` in beats.json to route to a
-different backend once one is added — the stage scripts don't change. `scripts/provider.py`'s
-`run_jobs()` also does the submit/poll with **auto-resubmit on a stalled or failed job**.
+Atlas Cloud is the default. Set `"provider"` in beats.json to route to another backend —
+`"atlas_cloud"` or `"modelrunner"` — and the stage scripts don't change. A backend also owns its
+model ids: a stage asks for a role (`image`, `video`, `tts`, `music`, `rmbg`, ...) via
+`prov.model_for(role, default)` and the backend answers from its own catalog, so `ATLASCLOUD_API_KEY`
+or `MODELRUNNER_API_KEY` is all that changes. Per-role overrides: `MODELRUNNER_MODEL_IMAGE` etc.
+`scripts/provider.py`'s `run_jobs()` also does the submit/poll with **auto-resubmit on a stalled or
+failed job**.
 
 ## Advanced: element-level motion collage
 

@@ -226,8 +226,11 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
 完整选型理由 + 每个 API/ffmpeg 坑(auth 头、curl 下载、无 libass 烧字幕、内容审核等)见
 `references/models-and-gotchas.md`。**排查任何失败前先读它**——大多数坑已记录。
 
-**后端可插拔。** 所有 API 调用都走一个 **provider**(`scripts/provider.py`);Atlas Cloud 是默认、
-目前唯一的后端。在 beats.json 里设 `"provider"` 就能切到别的后端(以后加了才有)——各阶段脚本不用改。
+**后端可插拔。** 所有 API 调用都走一个 **provider**(`scripts/provider.py`);Atlas Cloud 是默认后端。
+在 beats.json 里设 `"provider"`(`"atlas_cloud"` 或 `"modelrunner"`)就能切换——各阶段脚本不用改。
+模型 ID 也由后端自己提供:阶段脚本通过 `prov.model_for(role, default)` 请求某个角色
+(`image`、`video`、`tts`、`music`、`rmbg` 等),后端从自己的目录里给出对应模型,所以切换时只需换
+`ATLASCLOUD_API_KEY` 或 `MODELRUNNER_API_KEY`。单个角色可用 `MODELRUNNER_MODEL_IMAGE` 等环境变量覆盖。
 `provider.py` 的 `run_jobs()` 还做了提交/轮询,并在任务**卡死或失败时自动重提**。
 
 ## 高阶:元素级 motion collage

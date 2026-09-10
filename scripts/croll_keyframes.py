@@ -97,7 +97,8 @@ def run(project_dir):
         doc = json.load(f)
     photo = doc["anchor_photo"]
     aspect = doc.get("aspect", "9:16")
-    img_model = doc.get("image_model", EDIT_MODEL)
+    prov = get_provider(doc.get("provider"))
+    img_model = doc.get("image_model") or prov.model_for("image_edit", EDIT_MODEL)
     img_res = doc.get("image_resolution", "2k")
     theme = resolve_theme(doc.get("theme")) or {}
     collage_style = theme.get("idiom") or doc.get("collage_style", "newsprint-editorial")
@@ -105,7 +106,6 @@ def run(project_dir):
     kf_dir = os.path.join(project_dir, "keyframes")
     os.makedirs(kf_dir, exist_ok=True)
 
-    prov = get_provider(doc.get("provider"))
     photo_url = photo if photo.startswith("http") else prov.upload(photo)
     doc["anchor_photo_url"] = photo_url
     doc["anchor_freeze"] = FREEZE[kind]

@@ -78,13 +78,13 @@ def run(project_dir: str):
     for beat in doc["beats"]:
         if clone_ref:
             specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
-                CLONE_MODEL,
+                prov.model_for("tts", CLONE_MODEL),
                 text=CLONE_TEMPLATE.format(language=lang_name, persona=persona, script=t),
                 format="mp3", sample_rate=44100,
                 references=[{"audio_data": ref_b64}]))
         else:
             specs[f"narr_{beat['id']}"] = (lambda t=beat["narration"]: prov.submit_audio(
-                VOICE_MODEL, text=t, language=language, voice_id=voice_id,
+                prov.model_for("tts", VOICE_MODEL), text=t, language=language, voice_id=voice_id,
                 codec="mp3", sample_rate=44100, speed=speed))
 
     # BGM: only generate if we don't already have one (it's slow + costs more).
@@ -92,7 +92,7 @@ def run(project_dir: str):
     if not os.path.exists(bgm_path):
         music_prompt = doc.get("music", "cinematic majestic traditional Chinese guzheng erhu, warm")
         specs["bgm"] = (lambda mp=music_prompt: prov.submit_audio(
-            MUSIC_MODEL, prompt=mp, is_instrumental=True, format="mp3"))
+            prov.model_for("music", MUSIC_MODEL), prompt=mp, is_instrumental=True, format="mp3"))
     else:
         print(f"[bgm] reuse existing {bgm_path}")
 

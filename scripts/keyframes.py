@@ -33,7 +33,8 @@ def run(project_dir):
     with open(bpath) as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
-    img_model = doc.get("image_model", IMAGE_MODEL)   # default nano-banana-2; e.g. openai/gpt-image-2/text-to-image
+    prov = get_provider(doc.get("provider"))
+    img_model = doc.get("image_model") or prov.model_for("image", IMAGE_MODEL)
     img_res = doc.get("image_resolution", "1k")       # 1k (default) | 2k | 4k
     style = doc.get("style", "painterly")
     theme = resolve_theme(doc.get("theme")) or {}   # theme preset -> full look bundle
@@ -46,7 +47,6 @@ def run(project_dir):
     kf_dir = os.path.join(project_dir, "keyframes")
     os.makedirs(kf_dir, exist_ok=True)
 
-    prov = get_provider(doc.get("provider"))
     specs, by_key = {}, {}
     for beat in doc["beats"]:
         for shot, key in shots_of(beat):

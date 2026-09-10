@@ -33,7 +33,8 @@ def run(project_dir, styles=None, beat_index=0):
     with open(os.path.join(project_dir, "beats.json")) as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
-    img_model = doc.get("image_model", IMAGE_MODEL)
+    prov = get_provider(doc.get("provider"))
+    img_model = doc.get("image_model") or prov.model_for("image", IMAGE_MODEL)
     img_res = doc.get("image_resolution", "1k")
     beat = doc["beats"][beat_index]
     shot = first_shot(beat)
@@ -41,7 +42,6 @@ def run(project_dir, styles=None, beat_index=0):
     tcn, ten = beat.get("title_cn", ""), beat.get("title_en", "")
     out = os.path.join(project_dir, "style-bakeoff"); os.makedirs(out, exist_ok=True)
 
-    prov = get_provider(doc.get("provider"))
     specs = {}
     for name in styles:
         tp = resolve_theme(name) or {}              # theme name -> full look bundle

@@ -99,6 +99,9 @@ Then set your Atlas Cloud API key (get one at [atlascloud.ai/console/api-keys](h
 export ATLASCLOUD_API_KEY="sk-..."
 ```
 
+Prefer a different backend? Set `"provider": "modelrunner"` in `beats.json` and export
+`MODELRUNNER_API_KEY` instead ([modelrunner.ai](https://modelrunner.ai)) — the stage scripts are unchanged.
+
 ## Quick start
 
 Just ask your coding agent, with the skill installed:

@@ -99,6 +99,9 @@ git clone https://github.com/Alisa0808/vox-director.git ~/.claude/skills/vox-dir
 export ATLASCLOUD_API_KEY="sk-..."
 ```
 
+想用别的后端?在 `beats.json` 里设 `"provider": "modelrunner"`,并改为导出 `MODELRUNNER_API_KEY`
+([modelrunner.ai](https://modelrunner.ai))——各阶段脚本不用改。
+
 ## 快速开始
 
 装好技能后,直接跟你的编码 agent 说:

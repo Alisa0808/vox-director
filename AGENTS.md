@@ -17,7 +17,9 @@ any coding agent that can read instructions and run scripts can drive it.
 
 ## Requirements
 
-- `ATLASCLOUD_API_KEY` in the environment — https://www.atlascloud.ai/console/api-keys
+- An API key for the backend named in `beats.json` `"provider"`:
+  - `atlas_cloud` (default) → `ATLASCLOUD_API_KEY` — https://www.atlascloud.ai/console/api-keys
+  - `modelrunner` → `MODELRUNNER_API_KEY` — https://modelrunner.ai
 - `ffmpeg` + `ffprobe`
 - Python 3 with `pillow`
 

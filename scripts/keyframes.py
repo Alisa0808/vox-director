@@ -50,6 +50,8 @@ def run(project_dir):
     specs, by_key = {}, {}
     for beat in doc["beats"]:
         for shot, key in shots_of(beat):
+            if shot.get("kind") == "host":      # presenter shots use host_plates.py
+                continue
             if shot.get("keyframe_url"):        # already generated (e.g. reused wide) -> skip
                 continue
             scene = shot["scene"]

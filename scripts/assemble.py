@@ -65,10 +65,12 @@ def run(project_dir):
         # ensure the beat covers its narration (extend last shot if needed)
         durs = [float(s.get("dur", 10)) for s in shot_list]
         need = float(beat.get("narration_dur", sum(durs))) + TAIL
-        if sum(durs) < need:
+        # a host shot's audio IS its clip, so it is never extended or slowed (sync would break)
+        if sum(durs) < need and shot_list[-1].get("kind") != "host":
             durs[-1] += need - sum(durs)
         for s, d in zip(shot_list, durs):
-            segs.append({"clip": s["clip_path"], "dur": round(d, 2)})
+            segs.append({"clip": s["clip_path"], "dur": round(d, 2),
+                         "host": s.get("kind") == "host"})
             t += d
         beat_spans.append({"start": beat_start, "dur": round(t - beat_start, 2), "beat": beat})
     total = round(t, 2)
@@ -81,7 +83,7 @@ def run(project_dir):
         # clip), slow it to fill instead of freezing the last frame.
         cd = probe_dur(s["clip"])
         factor = s["dur"] / cd if cd > 0 else 1.0
-        pre = f"setpts={factor:.4f}*PTS," if factor > 1.02 else ""
+        pre = f"setpts={factor:.4f}*PTS," if factor > 1.02 and not s["host"] else ""
         # blurred-fill background so off-aspect clips (e.g. 3:4 card in 9:16) get a
         # nice bg instead of black bars; for matching-aspect clips the fg fills fully.
         fc = (f"[0:v]{pre}split[s0][s1];"

@@ -55,10 +55,11 @@ https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
   └─ final.mp4
 ```
 
-上面这条是 **B-roll**——一个选题进去,画面全靠生成。另外两种输入形态复用同一套引擎:
+上面这条是 **B-roll**——一个选题进去,画面全靠生成。另外两种输入形态和一个主持人模式复用同一套引擎:
 
 - **A-roll——你已经有一段口播视频。** 它会被 ASR 自动切成段,再整段套上拼贴风格,真人的脸、口型、手势逐帧保留(`gemini-omni-flash/video-edit`,失败自动重试 `seedance-2.0/reference-to-video`)。
 - **C-roll——你只有一张静态照片**(自拍、产品图)。主体被抠成摄影质感的贴纸——绝不重绘——每一段的海报围着它生成(`nano-banana-2/edit`)。旁白还能克隆成主体本人的声音。
+- **Host——一张主持人形象图。** 指定的 beat 会切到数字人,对口型念旁白,站在拼贴世界里(支持 16:9 和 9:16,位置和大小可调)。人物和世界分两块板生成再抠绿合成(`seedance-2.0/reference-to-video` + `gemini-omni-flash/image-to-video`)。
 
 两个关键理念决定成败,技能就是围绕它们搭的:
 
@@ -76,6 +77,7 @@ https://github.com/user-attachments/assets/ed08d230-7bcb-4b48-a17d-23c079208f9f
 | 动效(**真人 / 品牌**) | `kwaivgi/kling-video-o3-pro/image-to-video` |
 | 口播视频转拼贴(A-roll) | `google/gemini-omni-flash/video-edit` |
 | 照片锚进拼贴(C-roll) | `google/nano-banana-2/edit` |
+| 数字人出镜(Host) | `bytedance/seedance-2.0/reference-to-video` + `google/gemini-omni-flash/image-to-video` |
 | 旁白 | `xai/tts-v1` |
 | 用真人本人的声音念旁白 | `bytedance/seed-audio-1.0`(声音克隆) |
 | 配乐 | `minimax/music-2.6` |

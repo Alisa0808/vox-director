@@ -158,6 +158,23 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
    的旁白 + 配乐);印章/急推的时间点从旁白的 ASR 词级时间戳推(`asr_beats.py` 对任意音频都能用,
    不限 A-roll 素材)。
 
+## Host 模式(数字人在镜头里口播)
+
+用户想让**一个数字人出镜**念其中几段旁白、素材只有这个人的**一张静图**时使用(不是录好的视频,
+那是 A-roll)。把这些 beat 里的镜头标成 `"kind": "host"`,其余 beat 仍是普通 B-roll。完整配方、
+规则和限制见 `references/host-mode.md`(用这个模式前先读)。
+
+1. 配 `host.avatar`(一张定稿的角色形象,绝不重绘),每个 host beat 放一个 `kind: "host"` 的镜头:
+   `scene` 只写世界板(不含人),`element_motion` 点名每个元素并钉死形状。该 beat 旁白不超过 9.5 秒。
+2. 先跑 `audio.py`,再跑 `python3 scripts/host_plates.py out/<project>`:**花视频钱之前先看两张板**
+   (绿幕平整、脸没被重绘、留空区域是干净的)。
+3. `python3 scripts/host_clips.py out/<project>` 先打印费用估算然后停下,给用户看过再加 `--yes`。它分别
+   生成人物(Seedance)和世界(Omni),采用人物视频自带的音轨,再抠绿合成。
+4. `clips.py`、`keyframes.py` 会跳过 host 镜头;`assemble.py` 不会拉伸它们。
+
+用户可以用 `host.position`、`host.size` 调人物位置和大小。支持 16:9 和 9:16。host 镜头每秒成本约为
+B-roll 的两倍。已知问题:世界视频可能漂移(见 reference),漂了就重抽。
+
 ## beats.json schema
 
 ```json
@@ -182,6 +199,7 @@ Vox 拼贴的**样子**和**动效**是两件事、两步:
   "caption_style": "white",               // white(默认:干净白字幕)| paper(奶油剪纸拼贴风)
   "captions": true,                       // false = 不烧字幕(交干净成片,字幕留到后期上)
   "watermark": "Made with Atlas Cloud",
+  "host": {"avatar": "path/to/presenter.jpg", "position": "left", "size": 0.25},   // 仅 host 模式(references/host-mode.md)
   "mode": "croll",                        // 仅 C-roll —— 外加下面四个字段
   "anchor_photo": "path/to/photo.png",    // C-roll:要锚定的静态图(人物或产品)
   "croll_subject": "portrait",            // C-roll:portrait | product

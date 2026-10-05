@@ -93,8 +93,9 @@ def submit_image(model: str, prompt: str, **params) -> str:
 def submit_video(model: str, prompt: str, **params) -> str:
     """Submit a video generation task; return prediction id.
 
-    For image-to-video pass image="<url>"; for reference-to-video pass
-    images=["<url>", ...] (1-5 refs).
+    For image-to-video pass image="<url>"; for reference-to-video pass the model's own
+    keys: Kling takes images=["<url>", ...] (1-5 refs); Seedance 2.0 takes
+    reference_images=[...] and reference_audios=[...] (see references/host-mode.md).
     """
     body = {"model": model, "prompt": prompt, **params}
     return _post("/model/generateVideo", body)["data"]["id"]

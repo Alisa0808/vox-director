@@ -213,6 +213,27 @@ or a collage ad built around a real product shot (validated on both, 2026-07-17)
    above); derive stamp/snap-zoom timing from the narration's ASR word timestamps
    (`asr_beats.py` works on any audio, not just A-roll footage).
 
+## Host mode (a presenter speaks on camera)
+
+Use when the user wants a **digital presenter on screen** speaking some of the narration,
+from ONE still image of that presenter (not a recorded video: that is A-roll). Mark those
+beats with a shot `"kind": "host"`; every other beat stays normal B-roll. Full recipe,
+rules and limits: `references/host-mode.md` (read it before using this mode).
+
+1. Add `host.avatar` (a finished character design, never redrawn) and, per host beat, one
+   shot with `kind: "host"`, a world-only `scene` and an `element_motion` that names each
+   element and pins its shape. The beat's narration must be at most 9.5 s.
+2. `audio.py` first, then `python3 scripts/host_plates.py out/<project>`: **look at both
+   plates** (flat green, face intact, empty region clear) before spending on video.
+3. `python3 scripts/host_clips.py out/<project>` prints a cost estimate and stops; show it to
+   the user, then re-run with `--yes`. It generates the presenter (Seedance) and the world
+   (Omni) separately, adopts the presenter clip's own audio, and keys them together.
+4. `clips.py` and `keyframes.py` skip host shots; `assemble.py` never stretches them.
+
+The user can place and size the presenter with `host.position` and `host.size`. 16:9 and
+9:16 are supported. A host clip costs about twice a B-roll clip per second. Known issue:
+the world video can drift (see the reference); re-roll it if it does.
+
 ## beats.json schema
 
 ```json
@@ -237,6 +258,7 @@ or a collage ad built around a real product shot (validated on both, 2026-07-17)
   "caption_style": "white",               // white (default: clean white subtitle) | paper (cream cut-out collage look)
   "captions": true,                       // false = no burned-in captions (deliver clean, subtitle in post)
   "watermark": "Made with Atlas Cloud",
+  "host": {"avatar": "path/to/presenter.jpg", "position": "left", "size": 0.25},   // host mode only (references/host-mode.md)
   "mode": "croll",                        // C-roll only — plus the four fields below
   "anchor_photo": "path/to/photo.png",    // C-roll: the still to anchor (person or product)
   "croll_subject": "portrait",            // C-roll: portrait | product

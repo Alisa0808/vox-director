@@ -136,6 +136,8 @@ def run(project_dir, only=None):
         for shot, key in shots_of(beat):
             if only and key not in only:
                 continue
+            if shot.get("kind") == "host":      # presenter shots use host_clips.py
+                continue
             url = shot.get("keyframe_url")
             if not url and shot.get("keyframe_path") and os.path.exists(shot["keyframe_path"]):
                 # user-provided keyframe (e.g. hand-made collage card) -> upload it

@@ -75,6 +75,16 @@ The local ffmpeg is minimal: **no libass, no drawtext** (no libfreetype). So:
 - **Verify by extracting frames** — you can't read an mp4's content. `mjpeg` refuses
   full-range YUV, so add `format=yuvj420p` when grabbing jpgs.
 
+## Host mode (Seedance reference-to-video + Omni, keyed)
+
+- Seedance takes `reference_images` / `reference_audios` (not `images`), `ratio` (not
+  `aspect_ratio`), and a reference audio of 2-15 s. Omni takes `image` + `aspect_ratio` and is
+  only verified to 10 s.
+- Pricing units differ and the catalog `base_price` is NOT a per-second price: Seedance is
+  billed per token (720p about $0.194/s after promo, list $0.2429), Omni $0.13/s with a 3 s
+  minimum, nano-banana by resolution (1k $0.08, 2k $0.12). Read the model page, not the field.
+- Full recipe and rules: `references/host-mode.md`.
+
 ## Cost
 
 A ~30s standard film ≈ **$0.8–1.0** (6 keyframes + 6 clips + VO + music). The element-level

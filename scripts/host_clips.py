@@ -24,13 +24,13 @@ import os
 import subprocess
 import sys
 
-from host import (CHROMA, DEFAULT_WORLD_MOTION, PERSON_VIDEO_MODEL, PERSON_VIDEO_PROMPT,
-                  WORLD_VIDEO_MODEL, WORLD_VIDEO_PROMPT, estimate, host_cfg, layout_for,
-                  probe_dur, reference_audio, validate, video_seconds)
+from host import (CHROMA, DEFAULT_WORLD_MOTION, PERSON_VIDEO_PROMPT, WORLD_VIDEO_PROMPT,
+                  estimate, host_cfg, person_model, person_price, probe_dur,
+                  reference_audio, resolve_layout, validate, video_seconds, world_model)
 from provider import get_provider, run_jobs
 
 FPS = 24
-RES = {"16:9": (1920, 1080)}
+RES = {"16:9": (1920, 1080), "9:16": (1080, 1920)}
 
 
 def sh(args):
@@ -79,9 +79,10 @@ def run(project_dir, only=None, confirmed=False, redo=False):
         doc = json.load(f)
     shots = [t for t in validate(doc, need_audio=True) if not only or t[2] in only]
     aspect = doc.get("aspect", "16:9")
-    layout = layout_for(aspect)
+    layout = resolve_layout(doc)
     size = RES[aspect]
     cfg = host_cfg(doc)
+    pmodel, wmodel = person_model(doc), world_model(doc)
     plates_dir = os.path.join(project_dir, "clips", "plates")
     audio_dir = os.path.join(project_dir, "audio", "host")
     for d in (plates_dir, audio_dir):
@@ -106,8 +107,8 @@ def run(project_dir, only=None, confirmed=False, redo=False):
         print(f"  [{k}] {seconds[k]}s clip: " + (f"generate {' + '.join(what)}" if what
                                               else "reuse existing clips (re-composite only)"))
     if person_s or world_s:
-        lines, total = estimate(person_s, world_s)
-        print("estimate (prices from 2026-07-30 official pages — verify):")
+        lines, total = estimate(person_s, world_s, person_price(pmodel))
+        print(f"person model: {pmodel}\nworld model:  {wmodel}\nestimate (prices from 2026-07-30 official pages — verify):")
         print("\n".join(lines))
         print(f"  TOTAL ~ ${total:.2f}")
         if not confirmed:
@@ -125,23 +126,23 @@ def run(project_dir, only=None, confirmed=False, redo=False):
                                vdur)
             audio_url = prov.upload(padded)
             prompt = PERSON_VIDEO_PROMPT.format(
-                subject=cfg["subject"], side=layout["side"], outfit_clause=cfg["outfit_clause"],
+                subject=cfg["subject"], region=layout["region"], outfit_clause=cfg["outfit_clause"],
                 feel=feel)
             shot["person_video_prompt"] = prompt
             specs[f"{key}-person"] = (lambda p=shot["person_plate_url"], a=audio_url, v=vdur,
                                       t=prompt: prov.submit_video(
-                PERSON_VIDEO_MODEL, t, reference_images=[p], reference_audios=[a], duration=v,
+                pmodel, t, reference_images=[p], reference_audios=[a], duration=v,
                 ratio=aspect, resolution="720p", generate_audio=True, watermark=False,
                 bitrate_mode="standard"))
             meta[f"{key}-person"] = (shot, "person_clip")
         if key in world_s:
             prompt = WORLD_VIDEO_PROMPT.format(
                 element_motion=shot.get("element_motion") or DEFAULT_WORLD_MOTION,
-                side=layout["side"], feel=feel)
+                region=layout["region"], feel=feel)
             shot["world_video_prompt"] = prompt
             specs[f"{key}-world"] = (lambda p=shot["world_plate_url"], v=vdur,
                                      t=prompt: prov.submit_video(
-                WORLD_VIDEO_MODEL, t, image=p, duration=v, aspect_ratio=aspect,
+                wmodel, t, image=p, duration=v, aspect_ratio=aspect,
                 resolution="720p"))
             meta[f"{key}-world"] = (shot, "world_clip")
 

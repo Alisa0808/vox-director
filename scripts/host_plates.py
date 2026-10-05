@@ -19,7 +19,7 @@ import os
 import sys
 
 from host import (CHROMA_HEX, PERSON_PLATE_MODEL, PERSON_PLATE_PROMPT, WORLD_PLATE_MODEL,
-                  WORLD_PLATE_SUFFIX, host_cfg, layout_for, validate)
+                  WORLD_PLATE_SUFFIX, host_cfg, resolve_layout, validate)
 from provider import get_provider, run_jobs
 from styles import compose_collage_prompt, image_params, resolve_theme
 
@@ -30,7 +30,7 @@ def run(project_dir, only=None, redo=False):
         doc = json.load(f)
     shots = validate(doc)
     aspect = doc.get("aspect", "16:9")
-    layout = layout_for(aspect)
+    layout = resolve_layout(doc)
     cfg = host_cfg(doc)
     img_res = doc.get("image_resolution", "2k")
     theme = resolve_theme(doc.get("theme")) or {}

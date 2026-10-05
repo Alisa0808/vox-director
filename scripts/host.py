@@ -21,8 +21,8 @@ import subprocess
 # ---- models -----------------------------------------------------------------------------
 PERSON_PLATE_MODEL = "google/nano-banana-2/edit"
 WORLD_PLATE_MODEL = "google/nano-banana-2/text-to-image"
-PERSON_VIDEO_MODEL = "bytedance/seedance-2.0/reference-to-video"   # swap point for another lip-sync model
-WORLD_VIDEO_MODEL = "google/gemini-omni-flash/image-to-video"
+PERSON_VIDEO_MODEL = "bytedance/seedance-2.0/reference-to-video"   # default; host.person_video_model overrides
+WORLD_VIDEO_MODEL = "google/gemini-omni-flash/image-to-video"   # default; host.world_video_model overrides
 
 CHROMA = "0x00B140"          # key colour as ffmpeg wants it
 CHROMA_HEX = "#00B140"       # the same colour as the prompt says it
@@ -31,22 +31,51 @@ MIN_VIDEO_S = 4              # shortest Seedance clip we request
 MAX_VIDEO_S = 10             # Omni image-to-video is verified up to 10s (Seedance allows 15)
 
 # ---- layout registry: ONE entry per supported aspect ratio ------------------------------
-# placement   where/how big the presenter is on the person plate
-# world_clear what the world plate must keep empty so the presenter fits there
-# side        the clear region, named for the world-motion prompt
-# mouth_box   (x, y, w, h) as fractions of the frame, for lipsync_score.py; measured on the
-#             standard plate, so re-measure it if the presenter's size or position changes
+# regions          position name -> (region phrase, REGION shouted in the plate prompt)
+# default_position / default_head   the validated defaults (head = fraction of frame height)
+# placement        template for the person-plate prompt
+# world_clear      what the world plate must keep empty so the presenter fits there
+# mouth_box        (x, y, w, h) fractions of the frame for lipsync_score.py. Valid ONLY for the
+#                  default position + size; with a custom one pass --mouth to lipsync_score.py
+# Users adjust the presenter with host.position and host.size in beats.json (resolve_layout).
 HOST_LAYOUTS = {
     "16:9": {
-        "side": "left",
+        "regions": {"left": ("left third", "LEFT THIRD"),
+                    "center": ("middle third", "MIDDLE THIRD"),
+                    "right": ("right third", "RIGHT THIRD")},
+        "default_position": "left",
+        "default_head": 0.25,
         "placement": ("They are shown from the waist up, standing and facing the camera like a "
-                      "documentary host, positioned in the LEFT THIRD of the frame with their head "
-                      "about one quarter of the frame height — never a big head-and-shoulders crop."),
-        "world_clear": ("Leave the left third of the composition clearly empty — no element, scrap "
+                      "documentary host, positioned in the {REGION} of the frame with their head "
+                      "about {head} of the frame height — never a big head-and-shoulders crop."),
+        "world_clear": ("Leave the {region} of the composition clearly empty — no element, scrap "
                         "or text intrudes there."),
         "mouth_box": (0.215, 0.408, 0.07, 0.065),
     },
+    "9:16": {
+        "regions": {"lower": ("lower half", "LOWER HALF")},
+        "default_position": "lower",
+        "default_head": 1 / 7,
+        "placement": ("They are shown from the waist up, standing and facing the camera like a "
+                      "documentary host, centred horizontally in the {REGION} of the frame with "
+                      "the body running off the bottom edge and their head about {head} of the "
+                      "frame height, the top of the head near the middle of the frame — never a "
+                      "big head-and-shoulders crop."),
+        "world_clear": ("Leave the {region} of the composition clearly empty — no element, scrap "
+                        "or text intrudes there."),
+        "mouth_box": (0.45, 0.437, 0.12, 0.035),   # measured on the 9:16 test plate (2026-10-06)
+    },
 }
+_HEAD_WORDS = {0.25: "one quarter", 0.2: "one fifth", 1 / 7: "one seventh", 1 / 6: "one sixth",
+               0.5: "one half", 1 / 3: "one third"}
+
+
+def head_phrase(h):
+    for k, w in _HEAD_WORDS.items():
+        if abs(h - k) < 1e-6:
+            return w
+    return f"{round(h * 100)} percent"
+
 
 # ---- prompts (validated wording from the Silicon Valley film; pronouns made neutral) -----
 PERSON_PLATE_PROMPT = (
@@ -76,7 +105,7 @@ PERSON_VIDEO_PROMPT = (
     "natural: gentle close-lipped articulation with only slight jaw movement, never a wide open "
     "mouth, never bared teeth or a gaping shape. They have a warm, lively facial expression — "
     "small friendly head movements, natural blinks, eyebrows and eyes alive as they talk — and "
-    "gesture easily with one hand. They keep their exact position and scale in the {side} third "
+    "gesture easily with one hand. They keep their exact position and scale in the {region} "
     "of the frame{outfit_clause}, still a scissor-cut print with its torn white paper border. "
     "THE GREEN BACKGROUND MUST STAY A COMPLETELY FLAT, EVEN, UNIFORM PURE GREEN for the whole "
     "shot — no gradient, no shading, no shadows cast onto it, no texture, no objects, nothing "
@@ -92,7 +121,7 @@ WORLD_VIDEO_PROMPT = (
     "ELEMENT MOTION (this is the whole point — the world is alive the entire time): every "
     "element already in the still moves, but each one KEEPS ITS OWN EXACT SHAPE while it does. "
     "{element_motion}\n"
-    "Keep the {side} third of the frame clear and calm — nothing drifts into it.\n"
+    "Keep the {region} of the frame clear and calm — nothing drifts into it.\n"
     "AESTHETIC: preserve the printed, halftone, torn paper and tape textures of the still "
     "exactly, and keep the flat background colour.\n"
     "CONSTRAINTS: rigid flat paper layers only — no 3D rotation, no perspective change, no "
@@ -115,12 +144,26 @@ DEFAULT_WORLD_MOTION = (
 # ---- cost (2026-07-30 official pages — verify before relying on it) ----------------------
 PRICE_IMAGE_2K = 0.12            # per still (nano-banana-2, 2k)
 PRICE_PERSON_PER_S = 0.194       # Seedance 2.0 720p, after the -20% promo (list 0.2429)
+PRICE_PERSON_FAST_PER_S = 0.058  # Seedance 2.0 Fast: ESTIMATE = standard x 0.3 (the catalog ratio)
 PRICE_WORLD_PER_S = 0.13         # Omni, billed from 3s
 
 
 def article_free(phrase):
     """'a cream hoodie' -> 'cream hoodie' (prompts supply their own article)."""
     return re.sub(r"^(a|an|the)\s+", "", (phrase or "").strip(), flags=re.I)
+
+
+def person_model(doc):
+    """The person-video model: host.person_video_model, else the Seedance 2.0 default."""
+    return (doc.get("host") or {}).get("person_video_model") or PERSON_VIDEO_MODEL
+
+
+def world_model(doc):
+    return (doc.get("host") or {}).get("world_video_model") or WORLD_VIDEO_MODEL
+
+
+def person_price(model):
+    return PRICE_PERSON_FAST_PER_S if "fast" in model else PRICE_PERSON_PER_S
 
 
 def host_cfg(doc):
@@ -141,6 +184,32 @@ def layout_for(aspect):
                          f"{', '.join(HOST_LAYOUTS)}). Add an entry to HOST_LAYOUTS in "
                          f"scripts/host.py and validate it before using another ratio.")
     return HOST_LAYOUTS[aspect]
+
+
+def resolve_layout(doc):
+    """The layout for this project: the aspect's defaults, adjusted by the user's
+    host.position (a region name from the layout) and host.size (head height as a fraction of
+    the frame height, 0.08-0.6). The model treats size as a hint, not a measurement, so check
+    the person plate before paying for video. Returns region/placement/world_clear and
+    mouth_box (None when position or size is customised)."""
+    base = layout_for(doc.get("aspect", "16:9"))
+    h = doc.get("host") or {}
+    pos = h.get("position") or base["default_position"]
+    if pos not in base["regions"]:
+        raise SystemExit(f"host.position \"{pos}\" is not available for {doc.get('aspect', '16:9')} "
+                         f"(choose one of: {', '.join(base['regions'])})")
+    try:
+        head = float(h.get("size") or base["default_head"])
+    except (TypeError, ValueError):
+        raise SystemExit("host.size must be a number: head height as a fraction of frame height")
+    if not 0.08 <= head <= 0.6:
+        raise SystemExit(f"host.size {head} is outside 0.08-0.6 (head height / frame height)")
+    region, shout = base["regions"][pos]
+    custom = pos != base["default_position"] or abs(head - base["default_head"]) > 1e-9
+    return {"region": region,
+            "placement": base["placement"].format(REGION=shout, head=head_phrase(head)),
+            "world_clear": base["world_clear"].format(region=region),
+            "mouth_box": None if custom else base["mouth_box"]}
 
 
 def probe_dur(path):
@@ -184,7 +253,7 @@ def validate(doc, need_audio=False):
     if not shots:
         raise SystemExit("no shot has \"kind\": \"host\" — nothing to do")
     problems = []
-    layout_for(doc.get("aspect", "16:9"))
+    resolve_layout(doc)
     cfg = host_cfg(doc)
     if not cfg["avatars"]:
         problems.append("beats.json needs host.avatar (a path/URL to the presenter image)")
@@ -217,14 +286,14 @@ def validate(doc, need_audio=False):
     return shots
 
 
-def estimate(person_s, world_s):
+def estimate(person_s, world_s, person_per_s=PRICE_PERSON_PER_S):
     """Rough cost lines + total for the videos still to generate.
 
     person_s / world_s: shot key -> seconds to generate (absent = already exists, free).
     """
     lines, total = [], 0.0
     for key in sorted(set(person_s) | set(world_s)):
-        p = person_s.get(key, 0) * PRICE_PERSON_PER_S
+        p = person_s.get(key, 0) * person_per_s
         w = world_s.get(key, 0) * PRICE_WORLD_PER_S
         lines.append(f"  [{key}] person {person_s.get(key, 0)}s ${p:.2f} + "
                      f"world {world_s.get(key, 0)}s ${w:.2f}")

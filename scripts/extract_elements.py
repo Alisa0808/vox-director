@@ -51,7 +51,7 @@ def run(project_dir):
         out = os.path.join(ed, f"{name}.png")
         if mode == "cutout":
             url = prov.upload(raw)
-            res = run_jobs(prov, {name: lambda u=url: prov.remove_bg(RMBG, u)},
+            res = run_jobs(prov, {name: lambda u=url: prov.remove_bg(prov.model_for("rmbg", RMBG), u)},
                            poll_s=3, stall_s=60, max_retries=2, deadline_s=180)[name]
             if res:
                 prov.download(res, out)

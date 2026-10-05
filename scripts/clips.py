@@ -108,7 +108,8 @@ def run(project_dir, only=None):
     _theme = resolve_theme(doc.get("theme")) or {}
     motion_style = doc.get("motion_style") or _theme.get("motion_style", "punchy")  # calm|punchy|max
     constraints = doc.get("constraints", "strict")   # strict = defect guards on | loose = explore
-    model = doc.get("video_model", VIDEO_MODEL)   # Seedance for real people; Omni otherwise
+    prov = get_provider(doc.get("provider"))
+    model = doc.get("video_model") or prov.model_for("video", VIDEO_MODEL)
     vid_res = doc.get("video_resolution", "720p")  # 720p default; Seedance also 480p/1080p (Omni is 720p-only)
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(clip_dir, exist_ok=True)
@@ -130,7 +131,6 @@ def run(project_dir, only=None):
     if resolved_aspect:
         aspect = resolved_aspect   # every shot below shares this one resolved aspect
 
-    prov = get_provider(doc.get("provider"))
     specs, by_key = {}, {}
     for beat in doc["beats"]:
         for shot, key in shots_of(beat):

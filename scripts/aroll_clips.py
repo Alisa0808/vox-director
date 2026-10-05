@@ -103,14 +103,14 @@ def run(project_dir, only=None):
     src = doc["source_video"]
     aspect = doc.get("aspect", "9:16")
     theme = resolve_theme(doc.get("theme")) or {}
-    primary = doc.get("video_model", PRIMARY_MODEL)
-    fallback = doc.get("video_model_fallback", FALLBACK_MODEL)
+    prov = get_provider(doc.get("provider"))
+    primary = doc.get("video_model") or prov.model_for("video_edit", PRIMARY_MODEL)
+    fallback = doc.get("video_model_fallback") or prov.model_for("video_ref", FALLBACK_MODEL)
     seg_dir = os.path.join(project_dir, "segments")
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(seg_dir, exist_ok=True)
     os.makedirs(clip_dir, exist_ok=True)
 
-    prov = get_provider(doc.get("provider"))
 
     def gate_aspect(model):
         resolved, exact = resolve_video_aspect(aspect, model)

@@ -53,7 +53,7 @@ def run(project_dir, styles=None, beat_index=0):
         tag = "library" if name in STYLE_LIBRARY else "custom"
         print(f"[{name}] ({tag}) queued")
 
-    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=240)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, deadline_s=240)
 
     for name, url in done.items():
         if url:

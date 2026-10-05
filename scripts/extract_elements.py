@@ -52,7 +52,7 @@ def run(project_dir):
         if mode == "cutout":
             url = prov.upload(raw)
             res = run_jobs(prov, {name: lambda u=url: prov.remove_bg(RMBG, u)},
-                           poll_s=3, stall_s=60, max_retries=2, deadline_s=180)[name]
+                           poll_s=3, stall_s=60, deadline_s=180)[name]
             if res:
                 prov.download(res, out)
             elem = Image.open(out).convert("RGBA")

@@ -1,0 +1,85 @@
+name: Bug report
+description: A stage fails, crashes, or produces the wrong result
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check [`references/models-and-gotchas.md`](https://github.com/Alisa0808/vox-director/blob/main/references/models-and-gotchas.md) first, since many API and ffmpeg failures are already documented there.
+
+        **Never paste your `ATLASCLOUD_API_KEY`.** Remove it from logs, screenshots and `beats.json`.
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - B-roll (topic → film)
+        - A-roll (talking-head video)
+        - C-roll (one photo)
+        - Host mode
+        - Local engine (extract_elements / motion / kenburns)
+        - Skill loading / docs
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: stage
+    attributes:
+      label: Script / stage
+      placeholder: e.g. clips.py
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command you ran
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Describe the failure or the wrong output. Screenshots or extracted frames help for visual problems.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Full output
+      description: The complete terminal output, including any traceback and prediction or job IDs.
+      render: text
+  - type: textarea
+    id: beats
+    attributes:
+      label: Relevant part of beats.json
+      description: Project-level settings (aspect, theme, models) and the affected beat or shot. Remove secrets.
+      render: json
+  - type: input
+    id: models
+    attributes:
+      label: Models involved
+      placeholder: e.g. google/gemini-omni-flash/image-to-video
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, and the first line of `ffmpeg -version`
+      placeholder: macOS 15.4, Python 3.12.3, ffmpeg version 7.1
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked references/models-and-gotchas.md and searched existing issues
+          required: true
+        - label: I removed API keys and other secrets from everything above
+          required: true

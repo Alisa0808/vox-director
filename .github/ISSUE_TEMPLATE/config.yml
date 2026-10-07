@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting (models and gotchas)
+    url: https://github.com/Alisa0808/vox-director/blob/main/references/models-and-gotchas.md
+    about: Most API and ffmpeg failures are already documented here, with a fix.
+  - name: Workflow reference (SKILL.md)
+    url: https://github.com/Alisa0808/vox-director/blob/main/SKILL.md
+    about: The full pipeline, the beats.json schema and the approval gates.

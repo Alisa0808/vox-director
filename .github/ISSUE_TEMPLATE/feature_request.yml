@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest a new theme, provider, mode or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! For larger changes (a new mode, a new provider, `beats.json` schema changes, new default models), agreeing on the approach here first saves everyone paid validation runs. See [CONTRIBUTING.md](https://github.com/Alisa0808/vox-director/blob/main/CONTRIBUTING.md).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Theme preset / visual style
+        - Provider backend
+        - New mode or stage
+        - Existing stage behavior
+        - Audio / captions / assembly
+        - Docs / skill instructions
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to make, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How it could work, including any new `beats.json` fields or models.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: cost
+    attributes:
+      label: Cost impact
+      description: Would this add or change paid API calls? Roughly how much per film?
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to work on this?
+      options:
+        - Yes, I can open a PR
+        - Maybe, with some guidance
+        - No

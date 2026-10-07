@@ -141,6 +141,10 @@ Inspired by the collage-ad workflows of **[Stav Zilber](https://x.com/StavZilber
 
 Built end to end on **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director)** — one prompt, one film.
 
+## Contributing
+
+Bug reports, fixes, new theme presets and provider backends are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up, validate a change and open a pull request.
+
 ## License
 
 [MIT](LICENSE) © 2026 Alisa Qian

@@ -27,3 +27,11 @@ any coding agent that can read instructions and run scripts can drive it.
   ask for a "vox video".
 - **Codex / other agents**: follow `SKILL.md` as your instructions; this
   `AGENTS.md` is your entry point.
+
+## Changing this repo (for the agent)
+
+If you are modifying the skill itself rather than using it, follow
+**`CONTRIBUTING.md`**: keep `SKILL.md`/`SKILL.zh.md` and both READMEs in sync,
+rebuild `vox-director.skill`, and report offline and paid validation separately
+in the pull request. Never weaken the human approval gates or add silent retries
+of billable API calls.

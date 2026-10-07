@@ -141,6 +141,10 @@ assets/               样片
 
 全流程基于 **[Atlas Cloud](https://www.atlascloud.ai/?utm_source=github&utm_campaign=vox_director)** 构建——一个提示词,一条成片。
 
+## 参与贡献
+
+欢迎提交 Bug 报告、修复、新的主题预设和服务商后端——环境搭建、改动验证和提交 PR 的流程见 [CONTRIBUTING.md](CONTRIBUTING.md)(英文)。
+
 ## 许可
 
 [MIT](LICENSE) © 2026 Alisa Qian

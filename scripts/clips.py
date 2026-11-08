@@ -11,7 +11,8 @@ import json
 import os
 import sys
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import resolve_theme, resolve_video_aspect
 
 VIDEO_MODEL = "google/gemini-omni-flash/image-to-video"
@@ -103,6 +104,8 @@ def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     aspect = doc.get("aspect", "16:9")
     style = doc.get("style", "painterly")
     _theme = resolve_theme(doc.get("theme")) or {}
@@ -171,7 +174,7 @@ def run(project_dir, only=None):
             by_key[key] = shot
             print(f"[{key}] queued ({dur}s, {model.split('/')[1]})")
 
-    done = run_jobs(prov, specs, poll_s=5, stall_s=240, max_retries=2, deadline_s=1200)
+    done = run_jobs(prov, specs, poll_s=5, stall_s=240, max_retries=retries, deadline_s=1200)
 
     for key, url in done.items():
         if not url:

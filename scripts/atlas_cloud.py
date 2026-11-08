@@ -21,14 +21,54 @@ import subprocess
 import time
 import urllib.request
 import urllib.error
+from urllib.parse import urlsplit
 
 MEDIA_BASE = "https://api.atlascloud.ai/api/v1"
 LLM_BASE = "https://api.atlascloud.ai/v1"
 UA = "vox-director/0.1 (+https://atlascloud.ai)"
+# Atlas's own delivery domains (examples/, README, references/); downloads refuse
+# everything else, and no other host is ever sent the API key.
+ALLOWED_HOSTS = {"api.atlascloud.ai", "www.atlascloud.ai", "static.atlascloud.ai",
+                 "atlas-img.oss-accelerate-overseas.aliyuncs.com",
+                 "atlas-media.oss-us-west-1.aliyuncs.com"}
 
 
 class AtlasCloudError(RuntimeError):
     pass
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Never follow a redirect: it would silently re-send the Authorization header."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
+def check_url(url, *, credentialed=False):
+    """Only https:// to an allowed Atlas host, and no curl option look-alikes."""
+    if (not isinstance(url, str) or any(ord(c) <= 32 or ord(c) == 127 for c in url)
+            or "\\" in url or url.startswith("-")):
+        raise AtlasCloudError("refusing unsafe URL")
+    try:
+        parts = urlsplit(url)
+        hosts = {"api.atlascloud.ai"} if credentialed else ALLOWED_HOSTS
+        if (parts.scheme != "https" or parts.hostname not in hosts
+                or parts.username is not None or parts.password is not None
+                or parts.port not in (None, 443) or parts.fragment):
+            raise ValueError
+    except ValueError:
+        raise AtlasCloudError("URL must use HTTPS and an allowed Atlas host") from None
+    return url
+
+
+def _curl_quote(value):
+    """Quote a curl config value (not shell syntax)."""
+    if any(ord(c) < 32 or ord(c) == 127 for c in value):
+        raise AtlasCloudError("curl config value contains a control character")
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
 def _key() -> str:
@@ -36,6 +76,8 @@ def _key() -> str:
     if not k:
         raise AtlasCloudError("ATLASCLOUD_API_KEY is not set. Get one at "
                          "https://www.atlascloud.ai/console/api-keys")
+    if any(ord(c) < 32 or ord(c) == 127 for c in k):
+        raise AtlasCloudError("API key contains a control character")
     return k
 
 
@@ -47,21 +89,23 @@ def _headers(json_body: bool = True) -> dict:
 
 
 def _post(path: str, payload: dict, base: str = MEDIA_BASE, timeout: int = 60) -> dict:
-    req = urllib.request.Request(base + path, data=json.dumps(payload).encode(),
+    url = check_url(base + path, credentialed=True)
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(),
                                  headers=_headers(), method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with _OPENER.open(req, timeout=timeout) as r:
             return json.load(r)
     except urllib.error.HTTPError as e:
         raise AtlasCloudError(f"POST {path} -> {e.code}: {e.read().decode()[:400]}") from e
 
 
 def _get(path: str, base: str = MEDIA_BASE, timeout: int = 60, retries: int = 3) -> dict:
+    url = check_url(base + path, credentialed=True)
     last = None
     for i in range(retries):
         try:
-            req = urllib.request.Request(base + path, headers=_headers(json_body=False))
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            req = urllib.request.Request(url, headers=_headers(json_body=False))
+            with _OPENER.open(req, timeout=timeout) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
             # A prediction that failed upstream (e.g. a content-policy rejection) can
@@ -167,12 +211,21 @@ def video(model: str, prompt: str, **params) -> str:
 # ---------------------------------------------------------------- upload / dl
 
 def upload(file_path: str) -> str:
-    """Upload a local file, return its public URL. Uses curl (multipart)."""
+    """Upload a local file, return its public URL.
+
+    Uses curl (multipart). Authorization travels through stdin config, never
+    process arguments or a temporary file. Redirects are not followed.
+    """
+    url = check_url(f"{MEDIA_BASE}/model/uploadMedia", credentialed=True)
+    key = _key()
+    # curl -F has its own filename grammar; shell argv quoting is not enough.
+    form_path = _curl_quote(os.fspath(file_path))
+    config = "header = " + _curl_quote(f"Authorization: Bearer {key}") + "\n"
     out = subprocess.run(
-        ["/usr/bin/curl", "-s", "-X", "POST", f"{MEDIA_BASE}/model/uploadMedia",
-         "-H", f"Authorization: Bearer {_key()}", "-H", f"User-Agent: {UA}",
-         "-F", f"file=@{file_path}"],
-        capture_output=True, text=True, check=True).stdout
+        ["/usr/bin/curl", "-q", "-s", "--fail", "--config", "-",
+         "--proto", "=https", "--user-agent", UA,
+         "-X", "POST", "--url", url, "-F", f"file=@{form_path}"],
+        input=config, capture_output=True, text=True, check=True).stdout
     data = json.loads(out).get("data", {})
     url = data.get("download_url") or data.get("url")
     if not url:
@@ -181,8 +234,14 @@ def upload(file_path: str) -> str:
 
 
 def download(url: str, dest: str) -> str:
-    """Proxy-safe download via curl (urllib breaks on the OSS host)."""
-    subprocess.run(["/usr/bin/curl", "-s", "--retry", "3", "-o", dest, url], check=True)
+    """Proxy-safe download via curl (urllib breaks on the OSS host).
+
+    HTTPS Atlas/OSS URLs only (check_url), and --fail so an error page is never
+    written to dest as if it were the media.
+    """
+    subprocess.run(["/usr/bin/curl", "-q", "-s", "--fail", "--retry", "3",
+                    "--proto", "=https", "--output", dest, "--url", check_url(url)],
+                   check=True)
     if not os.path.exists(dest) or os.path.getsize(dest) == 0:
         raise AtlasCloudError(f"download produced empty file: {url}")
     return dest

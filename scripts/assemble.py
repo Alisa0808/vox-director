@@ -14,6 +14,7 @@ import os
 import subprocess
 import sys
 
+from safety import concat_entry, validate_project
 import text_overlay
 
 FPS, TAIL = 24, 0.5
@@ -45,6 +46,7 @@ def shots_of(beat):
 def run(project_dir):
     with open(os.path.join(project_dir, "beats.json")) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
     beats = doc["beats"]
     W, H = RES.get(doc.get("aspect", "16:9"), (1920, 1080))
     wm_text = doc.get("watermark", WATERMARK)
@@ -100,7 +102,7 @@ def run(project_dir):
     listf = os.path.join(tmp, "list.txt")
     with open(listf, "w") as f:
         for s in seg_files:
-            f.write(f"file '{os.path.abspath(s)}'\n")
+            f.write(concat_entry(s))
     body = os.path.join(tmp, "body_silent.mp4")
     ff(["-f", "concat", "-safe", "0", "-i", listf, "-c", "copy", body])
 

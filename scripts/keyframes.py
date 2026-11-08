@@ -13,7 +13,8 @@ import json
 import os
 import sys
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import compose_keyframe_prompt, compose_collage_prompt, resolve_theme, image_params
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
@@ -32,6 +33,8 @@ def run(project_dir):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     aspect = doc.get("aspect", "16:9")
     img_model = doc.get("image_model", IMAGE_MODEL)   # default nano-banana-2; e.g. openai/gpt-image-2/text-to-image
     img_res = doc.get("image_resolution", "1k")       # 1k (default) | 2k | 4k
@@ -69,7 +72,7 @@ def run(project_dir):
                                                              **image_params(img_model, aspect, img_res)))
             by_key[key] = shot
 
-    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=300)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=retries, deadline_s=300)
 
     for key, url in done.items():
         if not url:

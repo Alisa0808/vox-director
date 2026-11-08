@@ -90,14 +90,23 @@ def get_provider(name=None):
     return _REGISTRY[name]()
 
 
-def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=2, deadline_s=900):
-    """Submit + poll a batch of jobs, resubmitting any that FAIL or STALL.
+def retry_budget(doc):
+    """Paid resubmissions require an explicit nonnegative job_retries integer."""
+    retries = doc.get("job_retries", 0)
+    if type(retries) is not int or retries < 0:
+        raise ValueError("job_retries must be a nonnegative integer")
+    return retries
 
-    specs: dict of key -> submit() callable returning a job id. A job that fails,
-    or stays pending past `stall_s`, is resubmitted (fresh id) up to `max_retries`
-    times — this is what stops one stuck prediction from wasting the whole deadline.
-    Returns key -> output URL (or None). Prints progress like the old loops did.
+
+def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=0, deadline_s=900):
+    """Submit + poll once by default; opt into paid resubmission with max_retries.
+
+    specs maps keys to submit callables. Explicit retries apply to failed/stalled
+    jobs; a pending job without retries keeps polling its original id to deadline.
+    Returns key -> output URL (or None).
     """
+    if type(max_retries) is not int or max_retries < 0:
+        raise ValueError("max_retries must be a nonnegative integer")
     st = {}
     for key, submit in specs.items():
         st[key] = {"pid": submit(), "t": time.time(), "tries": 0}
@@ -127,7 +136,7 @@ def run_jobs(prov, specs, *, poll_s=3, stall_s=90, max_retries=2, deadline_s=900
                 elif status == "failed":
                     done[key] = None
                     print(f"[{key}] FAILED: {(r.get('error') or '')[:120]}")
-                # stalled + out of retries: keep waiting until the deadline
+                # stalled + out of retries: keep polling the original id until the deadline
     for key in specs:
         done.setdefault(key, None)
     return done

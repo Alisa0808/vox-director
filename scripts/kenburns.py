@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+from safety import validate_project
 
 FPS = 25
 RES = {"16:9": (1920, 1080), "9:16": (1080, 1920), "1:1": (1080, 1080), "3:4": (1080, 1440)}
@@ -31,6 +32,7 @@ def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))
     clip_dir = os.path.join(project_dir, "clips")
     os.makedirs(clip_dir, exist_ok=True)

@@ -16,7 +16,8 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFilter
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 
 RMBG = "youchuan/v8.1/remove-background"
 
@@ -38,7 +39,10 @@ def apply_erase(elem, bbox, erase):
 
 
 def run(project_dir):
-    spec = json.load(open(os.path.join(project_dir, "elements_spec.json")))
+    with open(os.path.join(project_dir, "elements_spec.json")) as f:
+        spec = json.load(f)
+    validate_project(project_dir, spec)
+    retries = retry_budget(spec)
     card = Image.open(spec["card"]).convert("RGBA")
     ed = os.path.join(project_dir, "elements"); os.makedirs(ed, exist_ok=True)
 
@@ -52,7 +56,7 @@ def run(project_dir):
         if mode == "cutout":
             url = prov.upload(raw)
             res = run_jobs(prov, {name: lambda u=url: prov.remove_bg(RMBG, u)},
-                           poll_s=3, stall_s=60, max_retries=2, deadline_s=180)[name]
+                           poll_s=3, stall_s=60, max_retries=retries, deadline_s=180)[name]
             if res:
                 prov.download(res, out)
             elem = Image.open(out).convert("RGBA")

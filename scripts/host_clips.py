@@ -27,7 +27,8 @@ import sys
 from host import (CHROMA, DEFAULT_WORLD_MOTION, PERSON_VIDEO_PROMPT, WORLD_VIDEO_PROMPT,
                   estimate, host_cfg, person_model, person_price, probe_dur,
                   reference_audio, resolve_layout, validate, video_seconds, world_model)
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 
 FPS = 24
 RES = {"16:9": (1920, 1080), "9:16": (1080, 1920)}
@@ -77,6 +78,8 @@ def run(project_dir, only=None, confirmed=False, redo=False):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     shots = [t for t in validate(doc, need_audio=True) if not only or t[2] in only]
     aspect = doc.get("aspect", "16:9")
     layout = resolve_layout(doc)
@@ -146,7 +149,7 @@ def run(project_dir, only=None, confirmed=False, redo=False):
                 resolution="720p"))
             meta[f"{key}-world"] = (shot, "world_clip")
 
-    done = run_jobs(prov, specs, poll_s=5, stall_s=300, max_retries=2, deadline_s=1500)
+    done = run_jobs(prov, specs, poll_s=5, stall_s=300, max_retries=retries, deadline_s=1500)
     for k, url in done.items():
         if not url:
             print(f"[{k}] FAILED")

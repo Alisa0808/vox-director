@@ -22,7 +22,8 @@ import os
 import subprocess
 import sys
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 
 # xai/tts-v1 is a clean, predictable multilingual TTS (named voices + language
 # select) — the default. Seed-Audio handles voice cloning (see CLONE_TEMPLATE)
@@ -58,6 +59,8 @@ def run(project_dir: str):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     adir = os.path.join(project_dir, "audio")
     os.makedirs(adir, exist_ok=True)
 
@@ -96,7 +99,7 @@ def run(project_dir: str):
     else:
         print(f"[bgm] reuse existing {bgm_path}")
 
-    done = run_jobs(prov, specs, poll_s=4, stall_s=150, max_retries=2, deadline_s=600)
+    done = run_jobs(prov, specs, poll_s=4, stall_s=150, max_retries=retries, deadline_s=600)
 
     # download + record
     for beat in doc["beats"]:

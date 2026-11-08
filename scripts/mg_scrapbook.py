@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 
+from safety import validate_project
 import text_overlay
 
 FPS, TAIL, WHIP = 24, 0.5, 0.3
@@ -78,6 +79,7 @@ def build_ending(cards, W, H, out, tmp):
 def run(project_dir):
     with open(os.path.join(project_dir, "beats.json")) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
     beats = doc["beats"]
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))
     wm_text = doc.get("watermark", "Made with Atlas Cloud · vox-director")

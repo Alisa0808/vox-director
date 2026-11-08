@@ -34,7 +34,8 @@ import json
 import os
 import sys
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import compose_collage_prompt, resolve_theme, image_params
 
 EDIT_MODEL = "google/nano-banana-2/edit"   # fallback: openai/gpt-image-2/edit
@@ -95,6 +96,8 @@ def run(project_dir):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     photo = doc["anchor_photo"]
     aspect = doc.get("aspect", "9:16")
     img_model = doc.get("image_model", EDIT_MODEL)
@@ -127,7 +130,7 @@ def run(project_dir):
                 img_model, p, images=[photo_url], **image_params(img_model, aspect, img_res)))
             by_key[key] = shot
 
-    done = run_jobs(prov, specs, poll_s=3, stall_s=90, max_retries=2, deadline_s=420)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=90, max_retries=retries, deadline_s=420)
 
     for key, url in done.items():
         if not url:

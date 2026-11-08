@@ -27,7 +27,8 @@ import os
 import subprocess
 import sys
 
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import resolve_theme, resolve_video_aspect
 
 PRIMARY_MODEL = "google/gemini-omni-flash/video-edit"
@@ -97,6 +98,8 @@ def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     if doc.get("mode") != "aroll":
         raise SystemExit("beats.json has no \"mode\": \"aroll\" -- run asr_beats.py first, "
                          "or use clips.py for a B-roll project.")
@@ -140,11 +143,11 @@ def run(project_dir, only=None):
         meta[key] = {"beat": beat, "seg_path": seg_path, "url": url}
         print(f"[{key}] queued on {primary.split('/')[-2]} ({beat['dur']}s)")
 
-    done = run_jobs(prov, specs, poll_s=8, stall_s=240, max_retries=1, deadline_s=900)
+    done = run_jobs(prov, specs, poll_s=8, stall_s=240, max_retries=retries, deadline_s=900)
 
     # ---- fallback pass: only the beats the primary model rejected/failed ----
     retry_keys = [k for k, u in done.items() if not u]
-    if retry_keys:
+    if retry_keys and doc.get("allow_fallback") is True:
         a_fallback = gate_aspect(fallback)
         if a_fallback is None:
             print(f"skipping fallback for beats {retry_keys}: aspect gate blocked above")
@@ -157,13 +160,13 @@ def run(project_dir, only=None):
                 params = video_params(fallback, m["url"], a_fallback, m["beat"]["dur"])
                 fb_specs[key] = (lambda mo=fallback, p=prompt, pr=params:
                                  prov.submit_video(mo, p, **pr))
-            fb_done = run_jobs(prov, fb_specs, poll_s=8, stall_s=240, max_retries=1, deadline_s=900)
+            fb_done = run_jobs(prov, fb_specs, poll_s=8, stall_s=240, max_retries=retries, deadline_s=900)
             done.update({k: v for k, v in fb_done.items() if v})
 
     for key, url in done.items():
         beat = meta[key]["beat"]
         if not url:
-            print(f"[{key}] FAILED on both primary and fallback -- beat will be missing "
+            print(f"[{key}] FAILED (fallback requires allow_fallback: true) -- beat will be missing "
                   f"from the assembled film")
             continue
         dest = os.path.join(clip_dir, f"clip_{key}.mp4")

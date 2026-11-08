@@ -16,7 +16,8 @@ import json
 import os
 import sys
 
-from provider import get_provider, run_jobs
+from safety import component, validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import compose_collage_prompt, STYLE_LIBRARY, THEME_PRESETS, resolve_theme, image_params
 
 IMAGE_MODEL = "google/nano-banana-2/text-to-image"
@@ -30,8 +31,11 @@ def first_shot(beat):
 
 def run(project_dir, styles=None, beat_index=0):
     styles = styles or DEFAULT_CANDIDATES
+    styles = [component(s) for s in styles]
     with open(os.path.join(project_dir, "beats.json")) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     aspect = doc.get("aspect", "16:9")
     img_model = doc.get("image_model", IMAGE_MODEL)
     img_res = doc.get("image_resolution", "1k")
@@ -53,7 +57,7 @@ def run(project_dir, styles=None, beat_index=0):
         tag = "library" if name in STYLE_LIBRARY else "custom"
         print(f"[{name}] ({tag}) queued")
 
-    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=2, deadline_s=240)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=75, max_retries=retries, deadline_s=240)
 
     for name, url in done.items():
         if url:

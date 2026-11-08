@@ -16,6 +16,7 @@ import json
 import os
 import subprocess
 import sys
+from safety import concat_entry, validate_project
 
 RES = {"16:9": (1920, 1080), "9:16": (1080, 1920), "1:1": (1080, 1080),
        "4:3": (1440, 1080), "3:4": (1080, 1440)}
@@ -38,6 +39,7 @@ def run(project_dir):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
     src = doc["source_video"]
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))
     tmp = os.path.join(project_dir, "_seg")
@@ -73,7 +75,7 @@ def run(project_dir):
     listf = os.path.join(tmp, "concat_list.txt")
     with open(listf, "w") as f:
         for m in muxed:
-            f.write(f"file '{os.path.abspath(m)}'\n")
+            f.write(concat_entry(m))
     final = os.path.join(project_dir, "final.mp4")
     ff(["-f", "concat", "-safe", "0", "-i", listf, "-c", "copy", final])
     print("FINAL:", final, f"({len(muxed)}/{len(doc['beats'])} beats)")

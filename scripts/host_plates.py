@@ -20,7 +20,8 @@ import sys
 
 from host import (CHROMA_HEX, PERSON_PLATE_MODEL, PERSON_PLATE_PROMPT, WORLD_PLATE_MODEL,
                   WORLD_PLATE_SUFFIX, host_cfg, resolve_layout, validate)
-from provider import get_provider, run_jobs
+from safety import validate_project
+from provider import get_provider, run_jobs, retry_budget
 from styles import compose_collage_prompt, image_params, resolve_theme
 
 
@@ -28,6 +29,8 @@ def run(project_dir, only=None, redo=False):
     bpath = os.path.join(project_dir, "beats.json")
     with open(bpath) as f:
         doc = json.load(f)
+    validate_project(project_dir, doc)
+    retries = retry_budget(doc)
     shots = validate(doc)
     aspect = doc.get("aspect", "16:9")
     layout = resolve_layout(doc)
@@ -73,7 +76,7 @@ def run(project_dir, only=None, redo=False):
 
     if not specs:
         print("all plates already exist (use --redo to regenerate)")
-    done = run_jobs(prov, specs, poll_s=3, stall_s=90, max_retries=2, deadline_s=420)
+    done = run_jobs(prov, specs, poll_s=3, stall_s=90, max_retries=retries, deadline_s=420)
 
     for k, url in done.items():
         if not url:

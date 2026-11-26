@@ -93,7 +93,7 @@ def shots_of(beat):
 
 def run(project_dir):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     photo = doc["anchor_photo"]
     aspect = doc.get("aspect", "9:16")
@@ -139,7 +139,7 @@ def run(project_dir):
         shot["keyframe_path"] = dest
         print(f"[{key}] saved {dest}")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 

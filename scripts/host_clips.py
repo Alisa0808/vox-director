@@ -75,7 +75,7 @@ def composite(person, world, dest, size, similarity=0.20, blend=0.06):
 
 def run(project_dir, only=None, confirmed=False, redo=False):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     shots = [t for t in validate(doc, need_audio=True) if not only or t[2] in only]
     aspect = doc.get("aspect", "16:9")
@@ -177,7 +177,7 @@ def run(project_dir, only=None, confirmed=False, redo=False):
         shot.pop("clip_url", None)
         print(f"[{key}] composited -> {dest} ({shot['dur']}s, audio {beat['narration_dur']}s)")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 

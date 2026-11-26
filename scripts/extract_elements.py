@@ -38,7 +38,7 @@ def apply_erase(elem, bbox, erase):
 
 
 def run(project_dir):
-    spec = json.load(open(os.path.join(project_dir, "elements_spec.json")))
+    spec = json.load(open(os.path.join(project_dir, "elements_spec.json"), encoding="utf-8"))
     card = Image.open(spec["card"]).convert("RGBA")
     ed = os.path.join(project_dir, "elements"); os.makedirs(ed, exist_ok=True)
 
@@ -65,7 +65,7 @@ def run(project_dir):
         el["file"] = out
         el["size"] = list(crop.size)
 
-    json.dump(spec, open(os.path.join(project_dir, "elements_spec.json"), "w"),
+    json.dump(spec, open(os.path.join(project_dir, "elements_spec.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=2)
     print("done ->", ed)
 

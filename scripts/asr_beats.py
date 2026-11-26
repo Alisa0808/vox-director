@@ -146,7 +146,7 @@ def run(project_dir, source, language=None, keyterm=None, max_beat_dur=MAX_BEAT_
         "transcript": result.get("text", ""),
         "beats": beats,
     }
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print(f"wrote {len(beats)} beats -> {bpath}")
     print("review/edit theme + content_beats, then run aroll_clips.py "

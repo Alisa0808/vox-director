@@ -76,7 +76,7 @@ def build_ending(cards, W, H, out, tmp):
 
 
 def run(project_dir):
-    with open(os.path.join(project_dir, "beats.json")) as f:
+    with open(os.path.join(project_dir, "beats.json"), encoding="utf-8") as f:
         doc = json.load(f)
     beats = doc["beats"]
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))

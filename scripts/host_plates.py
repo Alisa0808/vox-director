@@ -26,7 +26,7 @@ from styles import compose_collage_prompt, image_params, resolve_theme
 
 def run(project_dir, only=None, redo=False):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     shots = validate(doc)
     aspect = doc.get("aspect", "16:9")
@@ -92,7 +92,7 @@ def run(project_dir, only=None, redo=False):
             shot.pop(stale, None)
         print(f"[{k}] saved {dest}")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
     print("NEXT: open the plates in keyframes/ and check them before host_clips.py")

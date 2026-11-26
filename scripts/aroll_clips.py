@@ -95,7 +95,7 @@ def video_params(model, video_url, aspect, dur):
 
 def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     if doc.get("mode") != "aroll":
         raise SystemExit("beats.json has no \"mode\": \"aroll\" -- run asr_beats.py first, "
@@ -171,7 +171,7 @@ def run(project_dir, only=None):
         beat["clip_path"] = dest
         print(f"[{key}] saved {dest}")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 

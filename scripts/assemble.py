@@ -43,7 +43,7 @@ def shots_of(beat):
 
 
 def run(project_dir):
-    with open(os.path.join(project_dir, "beats.json")) as f:
+    with open(os.path.join(project_dir, "beats.json"), encoding="utf-8") as f:
         doc = json.load(f)
     beats = doc["beats"]
     W, H = RES.get(doc.get("aspect", "16:9"), (1920, 1080))
@@ -98,7 +98,7 @@ def run(project_dir):
 
     # ---- 2) concat all shot segments (video only) ----
     listf = os.path.join(tmp, "list.txt")
-    with open(listf, "w") as f:
+    with open(listf, "w", encoding="utf-8") as f:
         for s in seg_files:
             f.write(f"file '{os.path.abspath(s)}'\n")
     body = os.path.join(tmp, "body_silent.mp4")

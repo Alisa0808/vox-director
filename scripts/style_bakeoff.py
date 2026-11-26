@@ -30,7 +30,7 @@ def first_shot(beat):
 
 def run(project_dir, styles=None, beat_index=0):
     styles = styles or DEFAULT_CANDIDATES
-    with open(os.path.join(project_dir, "beats.json")) as f:
+    with open(os.path.join(project_dir, "beats.json"), encoding="utf-8") as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
     img_model = doc.get("image_model", IMAGE_MODEL)

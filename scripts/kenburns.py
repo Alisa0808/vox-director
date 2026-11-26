@@ -29,7 +29,7 @@ def shots_of(beat):
 
 def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))
     clip_dir = os.path.join(project_dir, "clips")
@@ -70,7 +70,7 @@ def run(project_dir, only=None):
             print(f"[{key}] ken-burns -> {out} ({'in' if zin else 'out'}, {dur}s)")
             idx += 1
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 

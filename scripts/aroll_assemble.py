@@ -36,7 +36,7 @@ def probe_dur(path):
 
 def run(project_dir):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     src = doc["source_video"]
     W, H = RES.get(doc.get("aspect", "9:16"), (1080, 1920))
@@ -71,7 +71,7 @@ def run(project_dir):
         raise SystemExit("no beats had a generated clip -- run aroll_clips.py first")
 
     listf = os.path.join(tmp, "concat_list.txt")
-    with open(listf, "w") as f:
+    with open(listf, "w", encoding="utf-8") as f:
         for m in muxed:
             f.write(f"file '{os.path.abspath(m)}'\n")
     final = os.path.join(project_dir, "final.mp4")

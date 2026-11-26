@@ -56,7 +56,7 @@ def probe_dur(path: str) -> float:
 
 def run(project_dir: str):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     adir = os.path.join(project_dir, "audio")
     os.makedirs(adir, exist_ok=True)
@@ -115,7 +115,7 @@ def run(project_dir: str):
         doc["bgm_dur"] = round(probe_dur(bgm), 2)
         print(f"[bgm] {doc['bgm_dur']}s -> {bgm}")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 

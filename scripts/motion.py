@@ -153,7 +153,7 @@ def build_act(project_dir, W, H):
     """Elements fly back to their ORIGINAL positions on the card (canvas 3:4),
     so the assembled frame reconstructs the original poster."""
     els = {e["name"]: e["file"] for e in
-           json.load(open(os.path.join(project_dir, "elements_spec.json")))["elements"]}
+           json.load(open(os.path.join(project_dir, "elements_spec.json"), encoding="utf-8"))["elements"]}
     S = W / 768.0                    # card is 768 wide; scale elements to canvas
     # original centers on card * S  ->  (x, y)
     P = {"crest": (255, 238), "seven": (215, 575), "ronaldo": (666, 647),

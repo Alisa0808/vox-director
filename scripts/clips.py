@@ -101,7 +101,7 @@ def painterly_prompt(motion):
 
 def run(project_dir, only=None):
     bpath = os.path.join(project_dir, "beats.json")
-    with open(bpath) as f:
+    with open(bpath, encoding="utf-8") as f:
         doc = json.load(f)
     aspect = doc.get("aspect", "16:9")
     style = doc.get("style", "painterly")
@@ -183,7 +183,7 @@ def run(project_dir, only=None):
         shot["clip_path"] = dest
         print(f"[{key}] saved {dest}")
 
-    with open(bpath, "w") as f:
+    with open(bpath, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
     print("updated", bpath)
 
